@@ -2,6 +2,7 @@
 
 Recently there have been a number of anomaly detection methods that introduce synthetic anomalies into otherwise healthy
 data.
+
 The aim of these methods is to generalise to real, unseen anomalies.
 nnOOD is able to compare these methods under a standardised training regime, based on
 [nnU-Net](https://github.com/MIC-DKFZ/nnUNet/), where each model is trained to an equal level
