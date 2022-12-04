@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 from pathlib import Path
-
 RAW_ENVIRON_VAR = 'nnood_raw_data_base'
 PREPROCESSED_ENVIRON_VAR = 'nnood_preprocessed_data_base'
 RESULTS_ENVIRON_VAR = 'nnood_results_base'
@@ -21,8 +20,6 @@ def setup_directory(var_name: str) -> Optional[str]:
     else:
         print(var_name + ' is not defined, preventing nnood from completing any actions involving it\'s files')
     return var_value
-
-
 raw_data_base = setup_directory(RAW_ENVIRON_VAR)
 preprocessed_data_base = setup_directory(PREPROCESSED_ENVIRON_VAR)
 results_base = setup_directory(RESULTS_ENVIRON_VAR)
