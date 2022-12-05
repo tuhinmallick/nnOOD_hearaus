@@ -3,7 +3,7 @@ import json
 from typing import Union, Any
 from pathlib import Path
 
-from nnood.paths import results_base, default_plans_identifier
+from nnad.paths import results_base, default_plans_identifier
 
 
 def load_pickle(file_path: Union[str, Path], mode: str = 'rb'):

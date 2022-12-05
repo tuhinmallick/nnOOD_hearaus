@@ -10,9 +10,9 @@ import SimpleITK as sitk
 import numpy as np
 from tqdm import tqdm
 
-from nnood.evaluation.metrics import ALL_METRICS
-from nnood.training.dataloading.dataset_loading import load_npy_or_npz
-from nnood.utils.file_operations import save_json
+from nnad.evaluation.metrics import ALL_METRICS
+from nnad.training.dataloading.dataset_loading import load_npy_or_npz
+from nnad.utils.file_operations import save_json
 
 TARGET_METRIC_BATCH_SIZE = 25
 

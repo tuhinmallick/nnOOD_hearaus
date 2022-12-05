@@ -6,9 +6,9 @@ from pathlib import Path
 import numpy as np
 import SimpleITK as sitk
 
-from nnood.preprocessing.normalisation import GLOBAL_NORMALISATION_MODALITIES
-from nnood.utils.file_operations import load_json, save_pickle
-from nnood.paths import DATASET_JSON_FILE, DATASET_PROPERTIES_FILE
+from nnad.preprocessing.normalisation import GLOBAL_NORMALISATION_MODALITIES
+from nnad.utils.file_operations import load_json, save_pickle
+from nnad.paths import DATASET_JSON_FILE, DATASET_PROPERTIES_FILE
 
 
 class DatasetAnalyser:

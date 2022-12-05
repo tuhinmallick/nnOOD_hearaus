@@ -6,8 +6,8 @@ from typing import Union
 import numpy as np
 import SimpleITK as sitk
 
-from nnood.preprocessing.preprocessing import get_lowres_axis, get_do_separate_z, resample_data
-from nnood.utils.file_operations import save_pickle
+from nnad.preprocessing.preprocessing import get_lowres_axis, get_do_separate_z, resample_data
+from nnad.utils.file_operations import save_pickle
 
 
 def save_data_as_file(data: Union[str, Path, np.ndarray], out_file_name: Path,

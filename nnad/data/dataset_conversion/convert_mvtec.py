@@ -4,8 +4,8 @@ import os
 from pathlib import Path
 import shutil
 
-from nnood.paths import raw_data_base, DATASET_JSON_FILE
-from nnood.data.dataset_conversion.utils import generate_dataset_json
+from nnad.paths import raw_data_base, DATASET_JSON_FILE
+from nnad.data.dataset_conversion.utils import generate_dataset_json
 
 CLASS_NAMES = ['bottle', 'cable', 'capsule', 'carpet', 'grid',
                'hazelnut', 'leather', 'metal_nut', 'pill', 'screw',

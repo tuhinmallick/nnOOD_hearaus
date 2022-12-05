@@ -4,10 +4,10 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from nnood.evaluation.nnOOD_evaluate_folder import evaluate_folder
-from nnood.inference.predict import predict_from_folder
-from nnood.paths import default_plans_identifier, preprocessed_data_base, raw_data_base, results_base
-from nnood.utils.file_operations import load_pickle
+from nnad.evaluation.nnOOD_evaluate_folder import evaluate_folder
+from nnad.inference.predict import predict_from_folder
+from nnad.paths import default_plans_identifier, preprocessed_data_base, raw_data_base, results_base
+from nnad.utils.file_operations import load_pickle
 
 
 def main():

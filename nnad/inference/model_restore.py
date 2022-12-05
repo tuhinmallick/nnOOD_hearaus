@@ -2,10 +2,10 @@ from pathlib import Path
 
 import torch
 
-import nnood
-from nnood.training.network_training.nnOODTrainer import nnOODTrainer
-from nnood.utils.file_operations import load_pickle
-from nnood.utils.miscellaneous import recursive_find_python_class
+import nnad
+from nnad.training.network_training.nnOODTrainer import nnOODTrainer
+from nnad.utils.file_operations import load_pickle
+from nnad.utils.miscellaneous import recursive_find_python_class
 
 
 def restore_model(pkl_file: Path, checkpoint=None, train=False, fp16=None) -> nnOODTrainer:
@@ -25,7 +25,7 @@ def restore_model(pkl_file: Path, checkpoint=None, train=False, fp16=None) -> nn
     init = info['init']
     trainer_class_name = info['name']
 
-    trainer_class = recursive_find_python_class([Path(nnood.__path__[0], 'training', 'network_training').__str__()],
+    trainer_class = recursive_find_python_class([Path(nnad.__path__[0], 'training', 'network_training').__str__()],
                                                 trainer_class_name, current_module='nnood.training.network_training')
 
     if trainer_class is None:

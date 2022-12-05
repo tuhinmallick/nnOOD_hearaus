@@ -4,14 +4,14 @@ from copy import deepcopy
 
 import numpy as np
 
-from nnood.utils.file_operations import load_pickle, save_pickle
-from nnood.paths import DATASET_PROPERTIES_FILE, default_plans_identifier, default_data_identifier
-from nnood.experiment_planning.utils import get_pool_and_conv_props
-from nnood.experiment_planning.modality_conversion import num_modality_components, get_channel_list
-from nnood.preprocessing.normalisation import modality_norm_scheme
-from nnood.network_architecture.generic_UNet import Generic_UNet
-from nnood.preprocessing.preprocessing import GenericPreprocessor
-from nnood.configuration import default_num_processes
+from nnad.utils.file_operations import load_pickle, save_pickle
+from nnad.paths import DATASET_PROPERTIES_FILE, default_plans_identifier, default_data_identifier
+from nnad.experiment_planning.utils import get_pool_and_conv_props
+from nnad.experiment_planning.modality_conversion import num_modality_components, get_channel_list
+from nnad.preprocessing.normalisation import modality_norm_scheme
+from nnad.network_architecture.generic_UNet import Generic_UNet
+from nnad.preprocessing.preprocessing import GenericPreprocessor
+from nnad.configuration import default_num_processes
 
 
 # Based on ExperimentPlanner3D_v21 from original nnU-Net

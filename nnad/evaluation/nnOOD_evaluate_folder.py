@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
-from nnood.evaluation.evaluator import aggregate_scores
+from nnad.evaluation.evaluator import aggregate_scores
 
 
 def evaluate_folder(folder_with_gts: str, folder_with_predictions: str, ref_suffix: str, pred_suffix: str,

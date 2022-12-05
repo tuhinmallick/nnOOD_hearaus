@@ -1,7 +1,7 @@
 from typing import Optional, Tuple, Union
 from pathlib import Path
 
-from nnood.utils.file_operations import save_json
+from nnad.utils.file_operations import save_json
 
 
 def generate_dataset_json(output_file: Union[str, Path], train_dir: Union[str, Path],

@@ -5,9 +5,9 @@ from typing import Union, Optional
 import cv2
 import numpy as np
 import pandas as pd
-
-from nnood.data.dataset_conversion.utils import generate_dataset_json
-from nnood.paths import raw_data_base, DATASET_JSON_FILE
+import pdb;pdb.set_trace()
+from nnad.data.dataset_conversion.utils import generate_dataset_json
+from nnad.paths import raw_data_base, DATASET_JSON_FILE
 
 script_dir = Path(os.path.realpath(__file__)).parent
 
@@ -16,7 +16,7 @@ def organise_heraeus_data(in_dir: Union[str, Path], data_type: str):
     in_dir_path = Path(in_dir)
     assert in_dir_path.is_dir(), 'Not a valid directory: ' + in_dir
 
-    import pdb;pdb.set_trace()
+    
     # in_test_labels_path = in_dir_path / 'ground_truth'
     # assert in_test_labels_path.is_dir()
 

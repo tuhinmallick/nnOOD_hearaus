@@ -7,8 +7,8 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from nnood.data.dataset_conversion.utils import generate_dataset_json
-from nnood.paths import raw_data_base, DATASET_JSON_FILE
+from nnad.data.dataset_conversion.utils import generate_dataset_json
+from nnad.paths import raw_data_base, DATASET_JSON_FILE
 
 # Dataset available at:
 # https://nihcc.app.box.com/v/ChestXray-NIHCC/folder/36938765345
