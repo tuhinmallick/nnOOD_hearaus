@@ -1,5 +1,7 @@
 import numpy as np
-from nnood.preprocessing.preprocessing import GenericPreprocessor
+from pathlib import Path
+
+from nnad.preprocessing.preprocessing import GenericPreprocessor
 
 
 class GenericPreprocessor_heraus(GenericPreprocessor):

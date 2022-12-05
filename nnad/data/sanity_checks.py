@@ -1,11 +1,12 @@
 import numpy as np
 from pathlib import Path
 from typing import List
+from tqdm.auto import tqdm
 
 import nibabel as nib
 import SimpleITK as sitk
 
-from nnood.utils.file_operations import load_json
+from nnad.utils.file_operations import load_json
 
 
 def verify_all_same_orientation(all_files: List[Path]):
@@ -105,9 +106,10 @@ def verify_dataset_integrity(dataset_folder: Path):
     all_files = []
 
     print('Verifying training set')
-    for c in training_ids:
-        print('Checking case', c)
-
+    progress_bar = tqdm(training_ids)
+    for c in progress_bar:
+        # print('Checking case', c)
+        progress_bar.set_description(f"Checking {c}")
         # Check if all files are present
         expected_image_files = [train_folder / f'{c}_{i:04d}.{file_suffixes[i]}' for i in range(num_modalities)]
         all_files += expected_image_files

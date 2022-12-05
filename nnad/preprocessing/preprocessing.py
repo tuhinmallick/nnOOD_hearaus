@@ -9,11 +9,11 @@ import cv2
 from scipy.ndimage.interpolation import map_coordinates
 from skimage.transform import resize
 
-from nnood.configuration import default_num_processes, RESAMPLING_SEPARATE_Z_ANISO_THRESHOLD
-from nnood.preprocessing.foreground_mask import get_object_mask
-from nnood.preprocessing.normalisation import normalise
-from nnood.utils.file_operations import save_pickle
-from nnood.utils.miscellaneous import make_default_mask
+from nnad.configuration import default_num_processes, RESAMPLING_SEPARATE_Z_ANISO_THRESHOLD
+from nnad.preprocessing.foreground_mask import get_object_mask
+from nnad.preprocessing.normalisation import normalise
+from nnad.utils.file_operations import save_pickle
+from nnad.utils.miscellaneous import make_default_mask
 
 
 def get_do_separate_z(spacing, anisotropy_threshold=RESAMPLING_SEPARATE_Z_ANISO_THRESHOLD):

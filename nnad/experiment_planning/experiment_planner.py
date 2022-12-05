@@ -10,7 +10,7 @@ from nnad.experiment_planning.utils import get_pool_and_conv_props
 from nnad.experiment_planning.modality_conversion import num_modality_components, get_channel_list
 from nnad.preprocessing.normalisation import modality_norm_scheme
 from nnad.network_architecture.generic_UNet import Generic_UNet
-from nnad.preprocessing.preprocessing import GenericPreprocessor
+from nnad.preprocessing.custom_preprocessor.preprocessor_heraus import GenericPreprocessor_heraus
 from nnad.configuration import default_num_processes
 
 
@@ -251,7 +251,7 @@ class ExperimentPlanner:
         self.save_my_plans()
 
     def run_preprocessing(self):
-
+        import pdb;pdb.set_trace()
         modalities = self.plans['modalities']
         normalization_schemes = self.plans['normalization_schemes']
         sample_identifiers = self.plans['dataset_properties']['sample_identifiers']
@@ -259,7 +259,7 @@ class ExperimentPlanner:
         intensity_properties = self.plans['dataset_properties']['intensity_properties']
         make_foreground_masks = self.plans['dataset_properties']['has_uniform_background']
 
-        preprocessor = GenericPreprocessor(modalities, normalization_schemes, self.transpose_forward,
+        preprocessor = GenericPreprocessor_heraus(modalities, normalization_schemes, self.transpose_forward,
                                            intensity_properties, make_foreground_masks)
         target_spacings = [i["current_spacing"] for i in self.plans_per_stage.values()]
 

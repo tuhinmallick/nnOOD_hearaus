@@ -5,7 +5,6 @@ from typing import Union, Optional
 import cv2
 import numpy as np
 import pandas as pd
-import pdb;pdb.set_trace()
 from nnad.data.dataset_conversion.utils import generate_dataset_json
 from nnad.paths import raw_data_base, DATASET_JSON_FILE
 
@@ -15,6 +14,7 @@ def organise_heraeus_data(in_dir: Union[str, Path], data_type: str):
     # storing the input directory
     in_dir_path = Path(in_dir)
     assert in_dir_path.is_dir(), 'Not a valid directory: ' + in_dir
+    import pdb;pdb.set_trace()
 
     
     # in_test_labels_path = in_dir_path / 'ground_truth'
@@ -32,19 +32,20 @@ def organise_heraeus_data(in_dir: Union[str, Path], data_type: str):
     # Copy normal training data
     for folder in progression_bar:
         # To check that the folder is a directory and is not already copied
-        if os.path.isdir(folder) == True and os.walk(folder)==0:
+        if os.path.isdir(folder) == True :
             for file in os.scandir(folder):
                 file_name = file.name
                 progression_bar.set_description(f"Copying {file_name}")
-                number, ext = file_name.split('.')
+                frame_number, ext = file_name.split('.')
                 # imagesTr/ folder, containing normal training images. 
                 # Images must follow naming convention <sample_id>_MMMM.[png|nii.gz], 
                 # where MMMM is the modality number.
-                modality_number =(folder.name.split('-')[0]).split('_')[-1]
+                # modality_number =(folder.name.split('-')[0]).split('_')[-1]
+                number = folder.name.split('-')[-1]
                 if (folder.name.split('-')[0]).split('_')[-2]!='Einschluss':
-                    shutil.copy(file, out_train_path / f'normal_{number}_{modality_number}.{ext}')
+                    shutil.copy(file, out_train_path / f'normal_{number}_{frame_number}_0000.{ext}')
                 else:
-                    shutil.copy(file, out_train_path / f'einschluss{number}_{modality_number}.{ext}')
+                    shutil.copy(file, out_train_path / f'einschluss_{number}_{frame_number}_0000.{ext}')
     import pdb; pdb.set_trace()
 
     out_test_path = out_dir_path / 'imagesTs'
@@ -59,12 +60,12 @@ def organise_heraeus_data(in_dir: Union[str, Path], data_type: str):
             for file in os.scandir(folder):
                 file_name = file.name
                 progression_bar_2.set_description(f"Copying {file_name}")
-                number, ext = file_name.split('.')
+                frame_number, ext = file_name.split('.')
                 # imagesTr/ folder, containing normal training images. 
                 # Images must follow naming convention <sample_id>_MMMM.[png|nii.gz], 
                 # where MMMM is the modality number.
-                modality_number =(folder.name.split('-')[0]).split('_')[-1]
-                shutil.copy(file, out_test_path / f'normal_{number}_{modality_number}.{ext}')
+                number = folder.name.split('-')[-1]
+                shutil.copy(file, out_train_path / f'normal_{number}_{frame_number}_0000.{ext}')
 
     data_augs = {
         'scaling': {'scale_range': [0.97, 1.03]}
@@ -101,4 +102,4 @@ if __name__ == '__main__':
     except Exception as e:
         print(traceback.format_exc())
 
-    # python nnood/data/dataset_conversion/convert_heraeus.py /home/tuhin/Data/heraus_images png
+    # python nnad/data/dataset_conversion/convert_heraeus.py /home/tuhin/Data/heraus_images png

@@ -2,11 +2,11 @@ import argparse
 import shutil
 from pathlib import Path
 
-from nnood.configuration import default_num_processes
-from nnood.data.sanity_checks import verify_dataset_integrity
-from nnood.paths import raw_data_base, preprocessed_data_base
-from nnood.experiment_planning.DatasetAnalyser import DatasetAnalyser
-from nnood.experiment_planning.experiment_planner import ExperimentPlanner
+from nnad.configuration import default_num_processes
+from nnad.data.sanity_checks import verify_dataset_integrity
+from nnad.paths import raw_data_base, preprocessed_data_base
+from nnad.experiment_planning.DatasetAnalyser import DatasetAnalyser
+from nnad.experiment_planning.alternative_experiment_planning.heraus import ExperimentPlanner_heraus
 
 # Plan experiment, and convert dataset to .npz format (gathering modalities of each sample)
 if __name__ == '__main__':
@@ -61,9 +61,9 @@ if __name__ == '__main__':
         preprocessed_data_dir.mkdir(exist_ok=True)
         shutil.copy(d_path / 'dataset.json', preprocessed_data_dir)
         shutil.copy(d_path / 'dataset_properties.pkl', preprocessed_data_dir)
-
+        import pdb;pdb.set_trace()
         print('Planning experiment...')
-        exp_planner = ExperimentPlanner(d_path, preprocessed_data_dir, num_processes, disable_skip)
+        exp_planner = ExperimentPlanner_heraus(d_path, preprocessed_data_dir, num_processes, disable_skip)
         exp_planner.plan_experiment()
         if run_preprocessing:
             print('Running preprocessing...')
