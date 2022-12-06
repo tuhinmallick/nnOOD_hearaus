@@ -251,14 +251,13 @@ class ExperimentPlanner:
         self.save_my_plans()
 
     def run_preprocessing(self):
-        import pdb;pdb.set_trace()
+        
         modalities = self.plans['modalities']
         normalization_schemes = self.plans['normalization_schemes']
         sample_identifiers = self.plans['dataset_properties']['sample_identifiers']
         sample_properties = self.plans['dataset_properties']['sample_properties']
         intensity_properties = self.plans['dataset_properties']['intensity_properties']
         make_foreground_masks = self.plans['dataset_properties']['has_uniform_background']
-
         preprocessor = GenericPreprocessor_heraus(modalities, normalization_schemes, self.transpose_forward,
                                            intensity_properties, make_foreground_masks)
         target_spacings = [i["current_spacing"] for i in self.plans_per_stage.values()]

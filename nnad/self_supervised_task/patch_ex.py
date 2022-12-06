@@ -2,11 +2,11 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
-from nnood.self_supervised_task.patch_blender import PatchBlender, SwapPatchBlender
-from nnood.self_supervised_task.patch_labeller import PatchLabeller, BinaryPatchLabeller
-from nnood.self_supervised_task.patch_shape_maker import PatchShapeMaker, EqualUniformPatchMaker
-from nnood.self_supervised_task.patch_transforms.base_transform import PatchTransform
-from nnood.self_supervised_task.utils import check_object_overlap, get_patch_slices, get_patch_image_slices
+from nnad.self_supervised_task.patch_blender import PatchBlender, SwapPatchBlender
+from nnad.self_supervised_task.patch_labeller import PatchLabeller, BinaryPatchLabeller
+from nnad.self_supervised_task.patch_shape_maker import PatchShapeMaker, EqualUniformPatchMaker
+from nnad.self_supervised_task.patch_transforms.base_transform import PatchTransform
+from nnad.self_supervised_task.utils import check_object_overlap, get_patch_slices, get_patch_image_slices
 
 
 def patch_ex(img_dest: np.ndarray, img_src: Optional[np.ndarray] = None, same: bool = False, num_patches: int = 1,

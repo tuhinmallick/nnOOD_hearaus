@@ -3,7 +3,7 @@ import itertools
 import numpy as np
 from skimage import filters, measure, morphology, segmentation
 
-from nnood.utils.miscellaneous import make_hypersphere_mask
+from nnad.utils.miscellaneous import make_hypersphere_mask
 
 
 def get_object_mask(img):

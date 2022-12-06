@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import shutil
 
-from nnood.paths import default_plans_identifier, preprocessed_data_base
+from nnad.paths import default_plans_identifier, preprocessed_data_base
 
 # Copy old plan to current plans identifier.
 # Use if you've made a change in another aspect of the pipeline (like the trainer)

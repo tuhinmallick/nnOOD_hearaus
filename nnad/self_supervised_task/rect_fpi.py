@@ -2,11 +2,11 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from nnood.self_supervised_task.patch_blender import UniformPatchBlender
-from nnood.self_supervised_task.patch_ex import patch_ex
-from nnood.self_supervised_task.patch_shape_maker import UnequalUniformPatchMaker
-from nnood.self_supervised_task.patch_labeller import ContinuousPatchLabeller
-from nnood.self_supervised_task.self_sup_task import SelfSupTask
+from nnad.self_supervised_task.patch_blender import UniformPatchBlender
+from nnad.self_supervised_task.patch_ex import patch_ex
+from nnad.self_supervised_task.patch_shape_maker import UnequalUniformPatchMaker
+from nnad.self_supervised_task.patch_labeller import ContinuousPatchLabeller
+from nnad.self_supervised_task.self_sup_task import SelfSupTask
 
 
 class RectFPI(SelfSupTask):

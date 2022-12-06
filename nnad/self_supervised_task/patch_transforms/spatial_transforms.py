@@ -4,8 +4,8 @@ from typing import Optional, Tuple
 import numpy as np
 from scipy.ndimage import rotate, zoom
 
-from nnood.self_supervised_task.patch_transforms.base_transform import PatchTransform
-from nnood.self_supervised_task.utils import check_object_overlap, get_patch_slices, get_patch_image_slices
+from nnad.self_supervised_task.patch_transforms.base_transform import PatchTransform
+from nnad.self_supervised_task.utils import check_object_overlap, get_patch_slices, get_patch_image_slices
 
 
 class ResizePatch(PatchTransform):

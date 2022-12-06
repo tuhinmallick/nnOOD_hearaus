@@ -19,7 +19,7 @@ def _norm_helper(data, normalisation_scheme_per_modality, intensity_properties, 
 
     norm_fn = (lambda d, mean, std: (d - mean) / std) if is_norm else (lambda d, mean, std: d * std + mean)
     norm_fn_stable = lambda d, mean, std: norm_fn(d, mean, std + 1e-8)
-
+    # import pdb;pdb.set_trace()
     assert len(normalisation_scheme_per_modality) == len(data), 'self.normalisation_scheme_per_modality ' \
                                                                 'must have as many entries as data has ' \
                                                                 'modalities'

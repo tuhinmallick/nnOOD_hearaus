@@ -2,7 +2,7 @@ from typing import Optional, Tuple, Union
 
 import numpy as np
 
-from nnood.self_supervised_task.patch_transforms.base_transform import PatchTransform
+from nnad.self_supervised_task.patch_transforms.base_transform import PatchTransform
 
 
 class AdjustContrast(PatchTransform):

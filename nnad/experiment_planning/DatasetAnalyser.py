@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import SimpleITK as sitk
+from tqdm.auto import tqdm
 
 from nnad.preprocessing.normalisation import GLOBAL_NORMALISATION_MODALITIES
 from nnad.utils.file_operations import load_json, save_pickle
@@ -138,7 +139,7 @@ class DatasetAnalyser:
         dataset_properties['has_uniform_background'] = self.dataset_json['has_uniform_background']
 
         dataset_properties['sample_properties'] = OrderedDict()
-        for sample_id in self.sample_identifiers:
+        for sample_id in tqdm(self.sample_identifiers):
             dataset_properties['sample_properties'][sample_id] = next(s_p for s_p in all_sample_properties
                                                                       if s_p['sample_id'] == sample_id)
 

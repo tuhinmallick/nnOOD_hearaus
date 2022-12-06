@@ -1,9 +1,9 @@
 import argparse
 
-from nnood.paths import default_plans_identifier
-from nnood.training.network_training.nnOODTrainer import nnOODTrainer
-from nnood.utils.default_configuration import get_default_configuration
-from nnood.utils.miscellaneous import load_pretrained_weights
+from nnad.paths import default_plans_identifier
+from nnad.training.network_training.nnOODTrainer import nnOODTrainer
+from nnad.utils.default_configuration import get_default_configuration
+from nnad.utils.miscellaneous import load_pretrained_weights
 
 
 def main():
@@ -103,6 +103,7 @@ def main():
         #     'trainer class must be derived from ' \
         #     'nnOODTrainerCascadeFullRes'
     else:
+        import pdb;pdb.set_trace()
         assert issubclass(trainer_class,
                           nnOODTrainer), 'network_trainer was found but is not derived from nnOODTrainer'
 

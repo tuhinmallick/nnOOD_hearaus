@@ -166,7 +166,7 @@ class GenericPreprocessor:
 
         self.resample_separate_z_anisotropy_threshold = RESAMPLING_SEPARATE_Z_ANISO_THRESHOLD
 
-    def load_and_combine(self, sample_identifier: str, input_folder: Path, return_properties: bool = False)\
+    def load_and_combine(self,left_margin, right_margin, sample_identifier: str, input_folder: Path, return_properties: bool = False)\
             -> Union[Tuple[np.array, OrderedDict], np.array]:
         all_ndarrays = []
         properties = OrderedDict()
@@ -179,7 +179,7 @@ class GenericPreprocessor:
             file_path = input_folder / f'{sample_identifier}_{i:04d}.{suffix}'
             properties['data_files'].append(file_path)
 
-            sitk_image = sitk.ReadImage(file_path.__str__())
+            sitk_image = sitk.ReadImage(file_path.__str__())[:,left_margin : right_margin]
             image_array = sitk.GetArrayFromImage(sitk_image).astype(np.float32)
 
             if i == 0:
@@ -248,7 +248,6 @@ class GenericPreprocessor:
         sample_data = self.load_and_combine(sample_identifier, input_folder)
 
         sample_data = sample_data.transpose((0, *[i + 1 for i in self.transpose_forward]))
-
         resampled_data, sample_properties = self.resample_and_normalise(sample_data, target_spacing, sample_properties,
                                                                         force_separate_z)
 
@@ -268,6 +267,7 @@ class GenericPreprocessor:
         print('Initialising to run preprocessing')
         print('Input folder: ', input_folder)
         print('Output folder: ', output_folder)
+        import pdb;pdb.set_trace()
 
         num_stages = len(target_spacings)
         if not isinstance(num_proc, (list, tuple, np.ndarray)):
@@ -283,7 +283,7 @@ class GenericPreprocessor:
             all_args = map(lambda s_i: [spacing, s_i, sample_properties[s_i], output_folder_stage, input_folder,
                                         force_separate_z],
                            sample_identifiers)
-
+            self._run_internal(spacing, 'einschluss_6440_0000001',sample_properties[ 'einschluss_6440_0000001'],output_folder_stage, input_folder,force_separate_z)
             with Pool(num_proc[i]) as pool:
                 pool.starmap(self._run_internal, all_args)
 
