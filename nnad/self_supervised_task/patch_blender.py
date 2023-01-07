@@ -5,8 +5,8 @@ import numpy as np
 import cv2
 from pietorch import blend_dst_numpy
 
-from nnood.preprocessing.normalisation import _norm_helper
-from nnood.self_supervised_task.utils import extract_dest_patch_mask, get_patch_image_slices
+from nnad.preprocessing.normalisation import _norm_helper
+from nnad.self_supervised_task.utils import extract_dest_patch_mask, get_patch_image_slices
 
 
 class PatchBlender(ABC):

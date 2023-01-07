@@ -7,14 +7,13 @@ import numpy as np
 import pandas as pd
 from nnad.data.dataset_conversion.utils import generate_dataset_json
 from nnad.paths import raw_data_base, DATASET_JSON_FILE
-
+import pdb;pdb.set_trace()
 script_dir = Path(os.path.realpath(__file__)).parent
 
 def organise_heraeus_data(in_dir: Union[str, Path], data_type: str):
     # storing the input directory
     in_dir_path = Path(in_dir)
     assert in_dir_path.is_dir(), 'Not a valid directory: ' + in_dir
-    import pdb;pdb.set_trace()
 
     
     # in_test_labels_path = in_dir_path / 'ground_truth'
@@ -46,7 +45,6 @@ def organise_heraeus_data(in_dir: Union[str, Path], data_type: str):
                     shutil.copy(file, out_train_path / f'normal_{number}_{frame_number}_0000.{ext}')
                 else:
                     shutil.copy(file, out_train_path / f'einschluss_{number}_{frame_number}_0000.{ext}')
-    import pdb; pdb.set_trace()
 
     out_test_path = out_dir_path / 'imagesTs'
     out_test_path.mkdir(parents=True, exist_ok=True)

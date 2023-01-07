@@ -1,7 +1,7 @@
 import numpy as np
 
-from nnood.training.network_training.nnOODTrainer import nnOODTrainer
-from nnood.training.loss_functions.deep_supervision import MultipleOutputLoss
+from nnad.training.network_training.nnOODTrainer import nnOODTrainer
+from nnad.training.loss_functions.deep_supervision import MultipleOutputLoss
 
 
 class nnOODTrainerDS(nnOODTrainer):

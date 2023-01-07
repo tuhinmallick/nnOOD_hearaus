@@ -5,15 +5,15 @@ import torch
 import torch.nn.functional as F
 from typing import List, Tuple
 
-from nnood.configuration import default_num_processes
-from nnood.training.dataloading.dataset_loading import load_npy_or_npz
-from nnood.self_supervised_task.patch_blender import SwapPatchBlender
-from nnood.self_supervised_task.patch_ex import patch_ex
-from nnood.self_supervised_task.patch_shape_maker import UnequalUniformPatchMaker
-from nnood.self_supervised_task.patch_labeller import BinaryPatchLabeller
-from nnood.self_supervised_task.patch_transforms.colour_transforms import AdjustContrast, PsuedoAdjustBrightness
-from nnood.self_supervised_task.patch_transforms.spatial_transforms import TranslatePatch
-from nnood.self_supervised_task.self_sup_task import SelfSupTask
+from nnad.configuration import default_num_processes
+from nnad.training.dataloading.dataset_loading import load_npy_or_npz
+from nnad.self_supervised_task.patch_blender import SwapPatchBlender
+from nnad.self_supervised_task.patch_ex import patch_ex
+from nnad.self_supervised_task.patch_shape_maker import UnequalUniformPatchMaker
+from nnad.self_supervised_task.patch_labeller import BinaryPatchLabeller
+from nnad.self_supervised_task.patch_transforms.colour_transforms import AdjustContrast, PsuedoAdjustBrightness
+from nnad.self_supervised_task.patch_transforms.spatial_transforms import TranslatePatch
+from nnad.self_supervised_task.self_sup_task import SelfSupTask
 
 
 def cutpaste_sample_dimensions(_: List[Tuple[int, int]], img_dims: np.ndarray):

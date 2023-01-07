@@ -178,8 +178,7 @@ class GenericPreprocessor:
             suffix = 'png' if 'png' in mod else 'nii.gz'
             file_path = input_folder / f'{sample_identifier}_{i:04d}.{suffix}'
             properties['data_files'].append(file_path)
-
-            sitk_image = sitk.ReadImage(file_path.__str__())[:,left_margin : right_margin]
+            sitk_image = sitk.ReadImage(file_path.__str__())
             image_array = sitk.GetArrayFromImage(sitk_image).astype(np.float32)
 
             if i == 0:
@@ -267,7 +266,6 @@ class GenericPreprocessor:
         print('Initialising to run preprocessing')
         print('Input folder: ', input_folder)
         print('Output folder: ', output_folder)
-        import pdb;pdb.set_trace()
 
         num_stages = len(target_spacings)
         if not isinstance(num_proc, (list, tuple, np.ndarray)):

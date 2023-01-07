@@ -10,21 +10,21 @@ import torch
 from torch import nn
 from torch.optim import lr_scheduler
 
-from nnood.configuration import default_num_processes
-from nnood.evaluation.evaluator import aggregate_scores
-from nnood.inference.export_utils import save_data_as_file
-from nnood.network_architecture.generic_UNet import Generic_UNet
-from nnood.network_architecture.initialisation import InitWeights_He
-from nnood.network_architecture.neural_network import AnomalyScoreNetwork
-from nnood.self_supervised_task.self_sup_task import SelfSupTask
-from nnood.training.data_augmentation.default_data_augmentation import default_3D_augmentation_params, \
+from nnad.configuration import default_num_processes
+from nnad.evaluation.evaluator import aggregate_scores
+from nnad.inference.export_utils import save_data_as_file
+from nnad.network_architecture.generic_UNet import Generic_UNet
+from nnad.network_architecture.initialisation import InitWeights_He
+from nnad.network_architecture.neural_network import AnomalyScoreNetwork
+from nnad.self_supervised_task.self_sup_task import SelfSupTask
+from nnad.training.data_augmentation.default_data_augmentation import default_3D_augmentation_params, \
     default_2D_augmentation_params, get_default_augmentation, get_patch_size
-from nnood.training.dataloading.dataset_loading import DataLoader, load_dataset_filenames, load_npy_or_npz, \
+from nnad.training.dataloading.dataset_loading import DataLoader, load_dataset_filenames, load_npy_or_npz, \
     unpack_dataset
-from nnood.training.network_training.network_trainer import NetworkTrainer
-from nnood.preprocessing.normalisation import denormalise
-from nnood.preprocessing.preprocessing import GenericPreprocessor
-from nnood.utils.file_operations import save_json, save_pickle, load_pickle
+from nnad.training.network_training.network_trainer import NetworkTrainer
+from nnad.preprocessing.normalisation import denormalise
+from nnad.preprocessing.preprocessing import GenericPreprocessor
+from nnad.utils.file_operations import save_json, save_pickle, load_pickle
 
 matplotlib.use('agg')
 

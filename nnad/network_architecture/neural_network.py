@@ -9,8 +9,8 @@ from torch.cuda.amp import autocast
 from batchgenerators.augmentations.utils import pad_nd_image
 # This pad function is too good to be copied
 
-from nnood.utils.miscellaneous import no_op, make_pos_enc
-from nnood.utils.to_torch import to_cuda, maybe_to_torch
+from nnad.utils.miscellaneous import no_op, make_pos_enc
+from nnad.utils.to_torch import to_cuda, maybe_to_torch
 
 
 class NeuralNetwork(nn.Module):

@@ -90,10 +90,6 @@ class GenericPreprocessor_heraus(GenericPreprocessor):
 
             starting_col = first_element + starting_point - 2 * gradient
             ending_col = first_element + starting_point + ending_point + 200 + 4 * gradient
-            # data_roi = img[:,starting_col : ending_col]
-            # import pdb;pdb.set_trace()
-            # cv2.imwrite( str(file_path),data_roi)
-            # sitk.WriteImage(sitk.GetImageFromArray(sitk.CastImageFilter().Execute(data_roi)), file_path)
             return starting_col, ending_col
     
     def _run_internal(self, target_spacing, sample_identifier, sample_properties, output_folder_stage: Path,

@@ -6,13 +6,13 @@ from typing import List, Optional, Union
 import numpy as np
 import torch
 
-from nnood.inference.export_utils import save_data_as_file
-from nnood.inference.model_restore import load_model_and_checkpoint_files
-from nnood.preprocessing.preprocessing import resample_data
-from nnood.training.dataloading.dataset_loading import load_npy_or_npz
-from nnood.training.network_training.nnOODTrainer import nnOODTrainer
-from nnood.utils.file_operations import load_pickle
-from nnood.utils.miscellaneous import get_sample_ids_and_files
+from nnad.inference.export_utils import save_data_as_file
+from nnad.inference.model_restore import load_model_and_checkpoint_files
+from nnad.preprocessing.preprocessing import resample_data
+from nnad.training.dataloading.dataset_loading import load_npy_or_npz
+from nnad.training.network_training.nnOODTrainer import nnOODTrainer
+from nnad.utils.file_operations import load_pickle
+from nnad.utils.miscellaneous import get_sample_ids_and_files
 
 
 def predict_from_folder(model: Path, input_folder_path: Path, output_folder_path: Path, folds: Union[List[str], List[int]],

@@ -2,8 +2,8 @@ from copy import deepcopy
 from torch import nn
 import torch
 import numpy as np
-from nnood.network_architecture.initialisation import InitWeights_He
-from nnood.network_architecture.neural_network import AnomalyScoreNetwork
+from nnad.network_architecture.initialisation import InitWeights_He
+from nnad.network_architecture.neural_network import AnomalyScoreNetwork
 import torch.nn.functional
 
 

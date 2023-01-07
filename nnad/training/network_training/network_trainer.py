@@ -19,9 +19,9 @@ from torch.cuda.amp import GradScaler, autocast
 from torch.optim import lr_scheduler
 from tqdm import trange
 
-from nnood.network_architecture.neural_network import AnomalyScoreNetwork
-from nnood.utils.file_operations import load_pickle, save_pickle
-from nnood.utils.to_torch import maybe_to_torch, to_cuda
+from nnad.network_architecture.neural_network import AnomalyScoreNetwork
+from nnad.utils.file_operations import load_pickle, save_pickle
+from nnad.utils.to_torch import maybe_to_torch, to_cuda
 
 matplotlib.use('agg')
 

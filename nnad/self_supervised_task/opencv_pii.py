@@ -3,11 +3,11 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from nnood.self_supervised_task.patch_blender import OpenCVPoissonPatchBlender
-from nnood.self_supervised_task.patch_ex import patch_ex
-from nnood.self_supervised_task.patch_shape_maker import EqualUniformPatchMaker
-from nnood.self_supervised_task.patch_labeller import ContinuousPatchLabeller
-from nnood.self_supervised_task.self_sup_task import SelfSupTask
+from nnad.self_supervised_task.patch_blender import OpenCVPoissonPatchBlender
+from nnad.self_supervised_task.patch_ex import patch_ex
+from nnad.self_supervised_task.patch_shape_maker import EqualUniformPatchMaker
+from nnad.self_supervised_task.patch_labeller import ContinuousPatchLabeller
+from nnad.self_supervised_task.self_sup_task import SelfSupTask
 
 
 class OpenCVPII(SelfSupTask):

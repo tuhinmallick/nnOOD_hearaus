@@ -30,9 +30,9 @@ def get_default_configuration(network: str, dataset_name: str, task_name: str, n
         stage = possible_stages[-1]
 
     trainer_class = recursive_find_python_class([Path(nnad.__path__[0], 'training', 'network_training').__str__()],
-                                                network_trainer, current_module='nnood.training.network_training')
+                                                network_trainer, current_module='nnad.training.network_training')
     task_class = recursive_find_python_class([Path(nnad.__path__[0], 'self_supervised_task').__str__()],
-                                             task_name, current_module='nnood.self_supervised_task')
+                                             task_name, current_module='nnad.self_supervised_task')
 
     output_folder_name = Path(results_base, dataset_name, task_name, network, network_trainer + '__' + plans_identifier)
 

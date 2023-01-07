@@ -1,13 +1,13 @@
 from setuptools import setup
 
 setup(
-    name='nnood',
+    name='nnad',
     version='',
-    packages=['nnood', 'nnood.data', 'nnood.data.dataset_conversion', 'nnood.utils', 'nnood.training',
-              'nnood.training.dataloading', 'nnood.training.loss_functions', 'nnood.training.network_training',
-              'nnood.training.data_augmentation', 'nnood.inference', 'nnood.evaluation', 'nnood.preprocessing',
-              'nnood.experiment_planning', 'nnood.network_architecture', 'nnood.self_supervised_task',
-              'nnood.self_supervised_task.patch_transforms'],
+    packages=['nnad', 'nnad.data', 'nnad.data.dataset_conversion', 'nnad.utils', 'nnad.training',
+              'nnad.training.dataloading', 'nnad.training.loss_functions', 'nnad.training.network_training',
+              'nnad.training.data_augmentation', 'nnad.inference', 'nnad.evaluation', 'nnad.preprocessing',
+              'nnad.experiment_planning', 'nnad.network_architecture', 'nnad.self_supervised_task',
+              'nnad.self_supervised_task.patch_transforms'],
     url='',
     license='',
     author='',

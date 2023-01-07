@@ -5,11 +5,11 @@ from typing import List, Tuple, Union
 
 import numpy as np
 
-from nnood.configuration import default_num_processes
-from nnood.network_architecture.neural_network import AnomalyScoreNetwork
-from nnood.self_supervised_task.self_sup_task import SelfSupTask
-from nnood.utils.file_operations import load_pickle
-from nnood.utils.miscellaneous import make_pos_enc
+from nnad.configuration import default_num_processes
+from nnad.network_architecture.neural_network import AnomalyScoreNetwork
+from nnad.self_supervised_task.self_sup_task import SelfSupTask
+from nnad.utils.file_operations import load_pickle
+from nnad.utils.miscellaneous import make_pos_enc
 
 
 def load_dataset_filenames(folder, sample_identifiers, num_cases_properties_loading_threshold=1000):

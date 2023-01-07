@@ -7,10 +7,10 @@ from batchgenerators.transforms.abstract_transforms import Compose
 from batchgenerators.transforms.color_transforms import GammaTransform
 from batchgenerators.transforms.utility_transforms import RenameTransform, NumpyToTensor, AppendChannelsTransform
 
-from nnood.training.data_augmentation.custom_transforms import Convert3DTo2DTransform, Convert2DTo3DTransform,\
+from nnad.training.data_augmentation.custom_transforms import Convert3DTo2DTransform, Convert2DTo3DTransform,\
     MySpatialTransform, MyMirrorTransform
-from nnood.training.data_augmentation.downsampling import DownsampleSegForDSTransform
-from nnood.training.dataloading.dataset_loading import DataLoader
+from nnad.training.data_augmentation.downsampling import DownsampleSegForDSTransform
+from nnad.training.dataloading.dataset_loading import DataLoader
 
 default_3D_augmentation_params = {
     'do_elastic': False,

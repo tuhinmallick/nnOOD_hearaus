@@ -114,7 +114,7 @@ def _patch_ex(ima_dest: np.ndarray, ima_src: np.ndarray, dest_object_mask: Optio
     min_dim_lens = (width_bounds_pct[:, 0] * bbox_shape).round().astype(int)
     max_dim_lens = (width_bounds_pct[:, 1] * bbox_shape).round().astype(int)
     dim_bounds = list(zip(min_dim_lens, max_dim_lens))
-
+    import pdb;pdb.set_trace()
     patch_mask = shape_maker(dim_bounds, bbox_shape)
 
     found_patch = False

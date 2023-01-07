@@ -3,8 +3,8 @@ from pathlib import Path
 
 import torch
 
-from nnood.inference.predict import predict_from_folder
-from nnood.paths import default_plans_identifier, results_base
+from nnad.inference.predict import predict_from_folder
+from nnad.paths import default_plans_identifier, results_base
 
 
 def main():

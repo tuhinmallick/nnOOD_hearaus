@@ -3,8 +3,8 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from nnood.configuration import default_num_processes
-from nnood.training.dataloading.dataset_loading import load_npy_or_npz
+from nnad.configuration import default_num_processes
+from nnad.training.dataloading.dataset_loading import load_npy_or_npz
 
 
 def get_avg_mask_bounds(m):

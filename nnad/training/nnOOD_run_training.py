@@ -102,8 +102,7 @@ def main():
         #     'If running 3d_cascade_fullres then your ' \
         #     'trainer class must be derived from ' \
         #     'nnOODTrainerCascadeFullRes'
-    else:
-        import pdb;pdb.set_trace()
+    else:   
         assert issubclass(trainer_class,
                           nnOODTrainer), 'network_trainer was found but is not derived from nnOODTrainer'
 
@@ -154,4 +153,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try: 
+        main()
+    except Exception as e:
+        import traceback,sys
+        traceback.print_exception(*sys.exc_info())
