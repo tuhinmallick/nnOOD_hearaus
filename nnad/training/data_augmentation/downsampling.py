@@ -29,7 +29,7 @@ def downsample_seg_for_ds_transform(seg, ds_scales=((1, 1, 1), (0.5, 0.5, 0.5), 
 
     for s in ds_scales:
 
-        if all([i == 1 for i in s]):
+        if all(i == 1 for i in s):
             output.append(seg)
         else:
             new_shape = np.array(seg.shape).astype(float)

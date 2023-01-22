@@ -20,7 +20,7 @@ TARGET_METRIC_BATCH_SIZE = 25
 def _load_file_pairs_list(pred_ref_pairs: List[Tuple[Path, Optional[Path]]]) -> List[Tuple[np.ndarray, np.ndarray]]:
     def _load_file(f: Path) -> np.ndarray:
 
-        if f.suffix == '.npz' or f.suffix == '.npy':
+        if f.suffix in ['.npz', '.npy']:
             # A file saved in a numpy representation must be in the correct form (channels first).
             return load_npy_or_npz(f, 'r')
 
@@ -30,22 +30,14 @@ def _load_file_pairs_list(pred_ref_pairs: List[Tuple[Path, Optional[Path]]]) -> 
         sitk_shape = np.array(sitk_img.GetSize())[::-1]
         img_shape = np.array(img.shape)
 
-        if len(img_shape) != len(sitk_shape):
-            # Must be a vector image, represented with channels last. Convert to channels first.
-            return np.moveaxis(img, -1, 0)
-        else:
-            # No channels, so no swap needed.
-            return img
+        return np.moveaxis(img, -1, 0) if len(img_shape) != len(sitk_shape) else img
 
     def _load_file_pair(p_r_pair: Tuple[Path, Optional[Path]]) -> Tuple[np.ndarray, np.ndarray]:
         p, r = p_r_pair
         pred = _load_file(p)
 
         # If ref is None, then image is normal, so return array of zeroes.
-        if r is None:
-            return pred, np.zeros_like(pred)
-        else:
-            return pred, _load_file(r)
+        return (pred, np.zeros_like(pred)) if r is None else (pred, _load_file(r))
 
     return [_load_file_pair(p) for p in pred_ref_pairs]
 
@@ -59,9 +51,7 @@ def compute_metric_scores(pred_ref_file_pairs: List[Tuple[Path, Optional[Path]]]
     all_ref_labels = np.concatenate([r.flatten() for r in ref_labels])
     label_values = np.unique(all_ref_labels)
 
-    # Evaluation labels should be binary (whether or not anomaly is present)
-    unexpected_labels = [v for v in label_values if v not in [0, 1]]
-    if len(unexpected_labels) > 0:
+    if unexpected_labels := [v for v in label_values if v not in [0, 1]]:
         # print('Binarising reference labels as found values other than [0, 1]: ', unexpected_labels)
         for r_l in ref_labels:
             r_l[r_l != 0] = 1
@@ -117,16 +107,16 @@ def aggregate_scores(pred_ref_file_pairs: List[Tuple[Path, Optional[Path]]],
         print('Computing final batch')
         all_results.append(compute_metric_scores(pred_ref_file_pairs[last_index: num_pairs], **metric_kwargs))
 
-        results = {}
-        for k in all_results[0].keys():
-            results[k] = np.mean([r[k] for r in all_results])
-
+        results = {
+            k: np.mean([r[k] for r in all_results])
+            for k in all_results[0].keys()
+        }
     # We create a hopefully unique id by hashing the entire output dictionary
     if json_output_file is not None:
         json_dict = OrderedDict()
         json_dict['name'] = json_name
         json_dict['description'] = json_description
-        timestamp = datetime.today()
+        timestamp = datetime.now()
         json_dict['timestamp'] = str(timestamp)
         json_dict['task'] = json_task
         json_dict['author'] = json_author

@@ -47,7 +47,7 @@ def convert_to_npy(args):
 
     if not unpack_files:
         for k in keys[1:]:
-            mask_file = path_with_stem(npy_file, npy_file.stem + f'_{k}')
+            mask_file = path_with_stem(npy_file, f'{npy_file.stem}_{k}')
             unpack_files = not mask_file.is_file()
 
             # As soon as we find one missing, break loop
@@ -62,7 +62,7 @@ def convert_to_npy(args):
 
         # Save others with main stem plus key
         for k in keys[1:]:
-            np.save(path_with_stem(npy_file, npy_file.stem + f'_{k}'), data_dict[k])
+            np.save(path_with_stem(npy_file, f'{npy_file.stem}_{k}'), data_dict[k])
 
 
 def unpack_dataset(folder: Path, sample_identifiers, threads=default_num_processes, keys=['data', 'mask']):
@@ -83,21 +83,23 @@ def unpack_dataset(folder: Path, sample_identifiers, threads=default_num_process
 
 # Cases are stored as npz, but we require unpack_dataset to be run. This will decompress them into npy which is much
 # faster to access
-def load_npy_or_npz(file: Path, npy_mmap_mode: str, load_mask: bool = False) \
-        -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+def load_npy_or_npz(file: Path, npy_mmap_mode: str, load_mask: bool = False) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     npy_file = file.with_suffix('.npy')
 
     if npy_file.is_file():
-        if load_mask:
-            return np.load(npy_file, npy_mmap_mode), np.load(path_with_stem(npy_file, npy_file.stem + '_mask'))
-        else:
-            return np.load(npy_file, npy_mmap_mode)
+        return (
+            (
+                np.load(npy_file, npy_mmap_mode),
+                np.load(path_with_stem(npy_file, f'{npy_file.stem}_mask')),
+            )
+            if load_mask
+            else np.load(npy_file, npy_mmap_mode)
+        )
+    file_dict = np.load(file)
+    if load_mask:
+        return file_dict['data'], file_dict['mask']
     else:
-        file_dict = np.load(file)
-        if load_mask:
-            return file_dict['data'], file_dict['mask']
-        else:
-            return file_dict['data']
+        return file_dict['data']
 
 
 def sample_lb_around_step_locations(steps: List[List[int]], patch_size: np.ndarray, dimension_lbs: np.ndarray,
@@ -180,11 +182,7 @@ class DataLoader:
         return not batch_idx < round(self.batch_size * (1 - self.oversample_foreground_percent))
 
     def determine_shapes(self):
-        if self.has_prev_stage:
-            num_label = 2
-        else:
-            num_label = 1
-
+        num_label = 2 if self.has_prev_stage else 1
         k = list(self._data.keys())[0]
         case_all_data = load_npy_or_npz(self._data[k]['data_file'], self.memmap_mode)
 
@@ -198,16 +196,22 @@ class DataLoader:
     def get_random_sample(self, load_mask: bool):
         key = np.random.choice(self.list_of_keys)
         if self.load_dataset_ram:
-            if load_mask:
-                return (self._data_ram[key]['data'], self._data_ram[key]['mask']), self._data_ram[key]['properties']
-            else:
-                return self._data_ram[key]['data'], self._data_ram[key]['properties']
-        else:
-            if 'properties' in self._data[key].keys():
-                return load_npy_or_npz(self._data[key]['data_file'], self.memmap_mode, load_mask), \
+            return (
+                (
+                    (self._data_ram[key]['data'], self._data_ram[key]['mask']),
+                    self._data_ram[key]['properties'],
+                )
+                if load_mask
+                else (
+                    self._data_ram[key]['data'],
+                    self._data_ram[key]['properties'],
+                )
+            )
+        if 'properties' in self._data[key].keys():
+            return load_npy_or_npz(self._data[key]['data_file'], self.memmap_mode, load_mask), \
                        self._data[key]['properties']
-            else:
-                return load_npy_or_npz(self._data[key]['data_file'], self.memmap_mode, load_mask), \
+        else:
+            return load_npy_or_npz(self._data[key]['data_file'], self.memmap_mode, load_mask), \
                        load_pickle(self._data[key]['properties_file'])
 
     def generate_train_batch(self):
@@ -261,7 +265,7 @@ class DataLoader:
             for dim in range(len(original_sample_shape)):
                 dimension_lbs[dim] = -need_to_pad[dim] // 2
                 dimension_ubs[dim] = original_sample_shape[dim] + need_to_pad[dim] // 2 + need_to_pad[dim] % 2 - \
-                                     self.patch_size[dim]
+                                         self.patch_size[dim]
 
             force_fg = self.get_do_oversample(batch_index)
 
@@ -274,8 +278,14 @@ class DataLoader:
             bbox_lbs, bbox_ubs = sample_lb_around_step_locations(inference_steps, self.patch_size, dimension_lbs,
                                                                  dimension_ubs)
 
-            while force_fg and len(anomaly_centres) != 0 and \
-                    not any([(bbox_lbs <= a_c).all() and (a_c <= bbox_ubs).all() for a_c in anomaly_centres]):
+            while (
+                force_fg
+                and len(anomaly_centres) != 0
+                and not any(
+                    (bbox_lbs <= a_c).all() and (a_c <= bbox_ubs).all()
+                    for a_c in anomaly_centres
+                )
+            ):
                 bbox_lbs, bbox_ubs = sample_lb_around_step_locations(inference_steps, self.patch_size, dimension_lbs,
                                                                      dimension_ubs)
 
@@ -284,8 +294,11 @@ class DataLoader:
             # will be padded to match the patch size later
             valid_bbox_lbs = np.maximum(bbox_lbs, 0)
             valid_bbox_ubs = np.minimum(bbox_ubs, original_sample_shape)
-            valid_bbox_slices = tuple([slice(None), *[slice(lb, ub) for lb, ub in zip(valid_bbox_lbs, valid_bbox_ubs)]])
+            valid_bbox_slices = slice(None), *[
+                slice(lb, ub) for lb, ub in zip(valid_bbox_lbs, valid_bbox_ubs)
+            ]
 
+            score_from_previous_stage = None
             # TODO: Revisit comment, should I use a regression mode????????
             # If we are doing the cascade then we will also need to load the score of the previous stage and
             # concatenate it. Here it will be concatenates to the current label because the augmentations need to be
@@ -293,13 +306,12 @@ class DataLoader:
             # the last channel of the data
             if self.has_prev_stage:
                 assert False, 'You\'e tried to use a cascade dataloader, but I haven\'t made it yet!!!!!!!!'
-                score_from_previous_stage = None
-                assert all([i == j for i, j in zip(score_from_previous_stage.shape[1:], sample_data.shape[1:])]), \
-                    'score_from_previous_stage does not match the shape of sample_data: %s vs %s' % \
-                    (str(score_from_previous_stage.shape[1:]), str(sample_data.shape[1:]))
-            else:
-                score_from_previous_stage = None
-
+                assert all(
+                    i == j
+                    for i, j in zip(
+                        score_from_previous_stage.shape[1:], sample_data.shape[1:]
+                    )
+                ), f'score_from_previous_stage does not match the shape of sample_data: {str(score_from_previous_stage.shape[1:])} vs {str(sample_data.shape[1:])}'
             # TODO: Review whether we still want this
             # At this point you might ask yourself why we would treat curr_label differently from
             # score_from_previous_stage. Why not just concatenate them here and forget about the if statements? Well

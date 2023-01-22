@@ -83,9 +83,7 @@ def main():
 
     val_folder = args.val_folder
 
-    if fold == 'all':
-        pass
-    else:
+    if fold != 'all':
         fold = int(fold)
 
     plans_file, output_folder_name, dataset_directory, stage, trainer_class, task_class =\
@@ -131,13 +129,9 @@ def main():
             else:
                 trainer.load_latest_checkpoint()
 
-        elif (not continue_training) and (args.pretrained_weights is not None):
+        elif args.pretrained_weights is not None:
             # Start a new training, using pre-trained weights.
             load_pretrained_weights(trainer.network, args.pretrained_weights)
-        else:
-            # new training without pretrained weights, do nothing
-            pass
-
         trainer.run_training()
     else:
         trainer.load_final_checkpoint(train=False)

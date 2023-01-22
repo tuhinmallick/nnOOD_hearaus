@@ -29,12 +29,12 @@ GREYSCALE = ['grid', 'screw', 'zipper']
 
 
 for g in [OBJECTS, TEXTURES, UNALIGNED_OBJECTS, H_FLIP, V_FLIP, ROTATE, SMALL_ROTATE]:
-    assert all([e in CLASS_NAMES for e in g]), f'Element of {g} not in CLASS_NAMES'
+    assert all(e in CLASS_NAMES for e in g), f'Element of {g} not in CLASS_NAMES'
 
 
 def organise_class(in_dir: Union[str, Path]):
 
-    assert os.path.isdir(in_dir), 'Not a valid directory: ' + in_dir
+    assert os.path.isdir(in_dir), f'Not a valid directory: {in_dir}'
     in_dir_path = Path(in_dir)
 
     in_train_path = in_dir_path / 'train' / 'good'
@@ -51,7 +51,7 @@ def organise_class(in_dir: Union[str, Path]):
 
     object_class = in_dir_path.name
 
-    out_dir_path = Path(raw_data_base) / ('mvtec_ad_' + object_class)
+    out_dir_path = Path(raw_data_base) / f'mvtec_ad_{object_class}'
     out_dir_path.mkdir(parents=True, exist_ok=True)
 
     out_train_path = out_dir_path / 'imagesTr'
@@ -76,7 +76,9 @@ def organise_class(in_dir: Union[str, Path]):
         if folder_name != 'good':
             # Check labels folder exists
             test_class_label_dir = in_test_labels_path / folder_name
-            assert test_class_label_dir.is_dir(), 'Missing labels folder: ' + test_class_label_dir.__str__()
+            assert (
+                test_class_label_dir.is_dir()
+            ), f'Missing labels folder: {test_class_label_dir.__str__()}'
 
         for f in d.iterdir():
             file_name = f.name
@@ -96,14 +98,17 @@ def organise_class(in_dir: Union[str, Path]):
     elif object_class in SMALL_ROTATE:
         data_augs['rotation'] = {'rot_max': 2}
 
-    if object_class in H_FLIP or object_class in V_FLIP:
+    if object_class in H_FLIP:
         axes = []
         if object_class in V_FLIP:
             axes.append(0)
 
-        if object_class in H_FLIP:
-            axes.append(1)
+        axes.append(1)
 
+        data_augs['mirror'] = {'mirror_axes': axes}
+
+    elif object_class in V_FLIP:
+        axes = [0]
         data_augs['mirror'] = {'mirror_axes': axes}
 
     png_type = 'png-bw' if object_class in GREYSCALE else 'png'

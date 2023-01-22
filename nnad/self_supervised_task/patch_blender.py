@@ -79,13 +79,12 @@ class OpenCVPoissonPatchBlender(PatchBlender):
         self.norm_args = norm_args
 
     def blend(self, factor: float, patch: np.ndarray, patch_mask: np.ndarray, patch_corner: np.ndarray,
-              dest: np.ndarray, patch_object_mask: Optional[np.ndarray], dest_object_mask: Optional[np.ndarray]) \
-            -> Tuple[np.ndarray, np.ndarray]:
+              dest: np.ndarray, patch_object_mask: Optional[np.ndarray], dest_object_mask: Optional[np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
 
         assert len(dest.shape) == 3 and dest.shape[0] in [1, 3], 'OpenCV patch blending only works on 3 or 1 ' \
-                                                                 'channeled, 2D images.'
+                                                                     'channeled, 2D images.'
         assert len(patch.shape) == 3 and patch.shape[0] in [1, 3], 'OpenCV patch blending only works on 3 or 1 ' \
-                                                                   'channeled, 2D images.'
+                                                                       'channeled, 2D images.'
 
         blended_img = dest.copy()
 
@@ -105,7 +104,7 @@ class OpenCVPoissonPatchBlender(PatchBlender):
             # Need to convert patch and blended_img to uint8, as OpenCV only takes those dtypes.
             blended_img_min, blended_img_max = np.min(blended_img), np.max(blended_img)
 
-            if 0 <= blended_img_min:
+            if blended_img_min >= 0:
                 if blended_img_max <= 1:
                     print('Assuming images are normalised to be in [0-1] range')
                     norm_scheme = '0-1'

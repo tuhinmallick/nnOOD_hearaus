@@ -23,6 +23,5 @@ def get_channel_list(modalities: OrderedDict):
     channel_list = []
     for i in modalities.keys():
         mod_components = MODALITY_TRANSLATOR[modalities[i]]
-        for m in mod_components:
-            channel_list.append(m)
+        channel_list.extend(iter(mod_components))
     return channel_list

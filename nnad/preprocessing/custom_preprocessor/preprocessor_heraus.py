@@ -18,16 +18,9 @@ class GenericPreprocessor_heraus(GenericPreprocessor):
     NOTE THAT THIS INHERITS FROM PreprocessorFor2D, SO ITS WRITTEN FOR 2D ONLY! WHEN CREATING A PREPROCESSOR FOR 3D
     DATA, USE GenericPreprocessor AS PARENT!
     """
-    def letterbox(
-    im,
-    new_shape=(640, 640),
-    color=(114, 114, 114),
-    auto=False,
-    scaleFill=False,
-    scaleup=True,
-    stride=32,):
+    def letterbox(self, new_shape=(640, 640), color=(114, 114, 114), auto=False, scaleFill=False, scaleup=True, stride=32):
         # Resize and pad image while meeting stride-multiple constraints
-        shape = im.shape[:2]  # current shape [height, width]
+        shape = self.shape[:2]
         if isinstance(new_shape, int):
             new_shape = (new_shape, new_shape)
 
@@ -51,13 +44,13 @@ class GenericPreprocessor_heraus(GenericPreprocessor):
         dh /= 2
 
         if shape[::-1] != new_unpad:  # resize
-            im = cv2.resize(im, new_unpad, interpolation=cv2.INTER_LINEAR)
+            self = cv2.resize(self, new_unpad, interpolation=cv2.INTER_LINEAR)
         top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
         left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-        im = cv2.copyMakeBorder(
-            im, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color
-        )  # add border
-        return im, ratio, (dw, dh)
+        self = cv2.copyMakeBorder(
+            self, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color
+        )
+        return self, ratio, (dw, dh)
 
 
     def find_roi(self,sample_identifier: str, input_folder: Path):

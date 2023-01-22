@@ -34,15 +34,14 @@ class OpenCVNSA(SelfSupTask):
     def apply(self, sample, sample_mask, sample_properties, sample_fn=None, dest_bbox=None, return_locations=False):
         src = sample_fn(sample_mask is not None)[0] if self.prev_sample is None else self.prev_sample
 
-        if sample_mask is not None:
-            if self.prev_sample is None:
-                src_mask = src[1]
-                src = src[0]
-            else:
-                src_mask = self.prev_sample_mask
-        else:
+        if sample_mask is None:
             src_mask = None
 
+        elif self.prev_sample is None:
+            src_mask = src[1]
+            src = src[0]
+        else:
+            src_mask = self.prev_sample_mask
         assert self._calibrated, 'OpenCVNSA task requires calibration!'
 
         self.blender.norm_args = (self.blender.norm_args[0], self.blender.norm_args[1],
@@ -70,10 +69,7 @@ class OpenCVNSA(SelfSupTask):
     def _load_img_m_pair(self, f):
         curr_img = load_npy_or_npz(f, 'r', self.class_has_foreground)
 
-        if self.class_has_foreground:
-            return curr_img  # Actually a tuple of image and mask
-        else:
-            return curr_img, None
+        return curr_img if self.class_has_foreground else (curr_img, None)
 
     def _collect_continuous_NSA_examples(self, files_to_load):
         last_img, last_img_m = self._load_img_m_pair(files_to_load[0]['data_file'])

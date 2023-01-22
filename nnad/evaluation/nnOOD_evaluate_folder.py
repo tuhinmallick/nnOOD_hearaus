@@ -27,9 +27,8 @@ def evaluate_folder(folder_with_gts: str, folder_with_predictions: str, ref_suff
     def check_gt_exists(f: Path) -> Optional[Path]:
         if f.is_file():
             return f
-        else:
-            missing_gts.append(f.name)
-            return None
+        missing_gts.append(f.name)
+        return None
 
     files_gt = list(map(check_gt_exists, files_gt))
 

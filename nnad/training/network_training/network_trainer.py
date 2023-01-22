@@ -147,7 +147,7 @@ class NetworkTrainer:
                 splits = []
                 all_keys_sorted = np.sort(list(self.dataset.keys()))
                 kfold = KFold(n_splits=5, shuffle=True, random_state=12345)
-                for i, (train_idx, test_idx) in enumerate(kfold.split(all_keys_sorted)):
+                for train_idx, test_idx in kfold.split(all_keys_sorted):
                     train_keys = np.array(all_keys_sorted)[train_idx]
                     test_keys = np.array(all_keys_sorted)[test_idx]
                     splits.append(OrderedDict())
@@ -228,38 +228,39 @@ class NetworkTrainer:
 
     def print_to_log_file(self, *args, also_print_to_console=True, add_timestamp=True):
 
-        if not self.no_print:
-            timestamp = time()
-            dt_object = datetime.fromtimestamp(timestamp)
+        if self.no_print:
+            return
+        timestamp = time()
+        dt_object = datetime.fromtimestamp(timestamp)
 
-            if add_timestamp:
-                args = ('%s:' % dt_object, *args)
+        if add_timestamp:
+            args = f'{dt_object}:', *args
 
-            if self.log_file is None:
-                self.output_folder.mkdir(parents=True, exist_ok=True)
-                timestamp = datetime.now()
-                self.log_file = self.output_folder / ('training_log_%d_%d_%d_%02.0d_%02.0d_%02.0d.txt' %
-                                                      (timestamp.year, timestamp.month, timestamp.day, timestamp.hour,
-                                                       timestamp.minute, timestamp.second))
-                with open(self.log_file, 'w') as f:
-                    f.write('Starting... \n')
-            successful = False
-            max_attempts = 5
-            ctr = 0
-            while not successful and ctr < max_attempts:
-                try:
-                    with open(self.log_file, 'a+') as f:
-                        for a in args:
-                            f.write(str(a))
-                            f.write(' ')
-                        f.write('\n')
-                    successful = True
-                except IOError:
-                    print('%s: failed to log: ' % datetime.fromtimestamp(timestamp), sys.exc_info())
-                    sleep(0.5)
-                    ctr += 1
-            if also_print_to_console:
-                print(*args)
+        if self.log_file is None:
+            self.output_folder.mkdir(parents=True, exist_ok=True)
+            timestamp = datetime.now()
+            self.log_file = self.output_folder / ('training_log_%d_%d_%d_%02.0d_%02.0d_%02.0d.txt' %
+                                                  (timestamp.year, timestamp.month, timestamp.day, timestamp.hour,
+                                                   timestamp.minute, timestamp.second))
+            with open(self.log_file, 'w') as f:
+                f.write('Starting... \n')
+        successful = False
+        max_attempts = 5
+        ctr = 0
+        while not successful and ctr < max_attempts:
+            try:
+                with open(self.log_file, 'a+') as f:
+                    for a in args:
+                        f.write(str(a))
+                        f.write(' ')
+                    f.write('\n')
+                successful = True
+            except IOError:
+                print(f'{datetime.fromtimestamp(timestamp)}: failed to log: ', sys.exc_info())
+                sleep(0.5)
+                ctr += 1
+        if also_print_to_console:
+            print(*args)
 
     def save_checkpoint(self, file_path: Path, save_optimizer=True):
         start_time = time()
@@ -270,11 +271,7 @@ class NetworkTrainer:
         if self.lr_scheduler is not None and hasattr(self.lr_scheduler,
                                                      'state_dict'):
             lr_sched_state_dct = self.lr_scheduler.state_dict()
-        if save_optimizer:
-            optimizer_state_dict = self.optimizer.state_dict()
-        else:
-            optimizer_state_dict = None
-
+        optimizer_state_dict = self.optimizer.state_dict() if save_optimizer else None
         self.print_to_log_file('saving checkpoint...')
         save_this = {
             'epoch': self.epoch + 1,
@@ -320,7 +317,9 @@ class NetworkTrainer:
     def load_final_checkpoint(self, train=False):
         filename = self.output_folder / 'model_final_checkpoint.model'
         if not filename.is_file():
-            raise RuntimeError('Final checkpoint not found. Expected: %s. Please finish the training first.' % filename)
+            raise RuntimeError(
+                f'Final checkpoint not found. Expected: {filename}. Please finish the training first.'
+            )
         return self.load_checkpoint(filename, train=train)
 
     def load_checkpoint(self, fname, train=True):
@@ -368,9 +367,8 @@ class NetworkTrainer:
 
         if self.fp16:
             self._maybe_init_amp()
-            if train:
-                if 'amp_grad_scaler' in checkpoint.keys():
-                    self.amp_grad_scaler.load_state_dict(checkpoint['amp_grad_scaler'])
+            if train and 'amp_grad_scaler' in checkpoint.keys():
+                self.amp_grad_scaler.load_state_dict(checkpoint['amp_grad_scaler'])
 
         self.network.load_state_dict(new_state_dict)
         self.epoch = checkpoint['epoch']
@@ -380,7 +378,7 @@ class NetworkTrainer:
                 self.optimizer.load_state_dict(optimizer_state_dict)
 
             if self.lr_scheduler is not None and hasattr(self.lr_scheduler, 'load_state_dict') and \
-                    checkpoint['lr_scheduler_state_dict'] is not None:
+                        checkpoint['lr_scheduler_state_dict'] is not None:
                 self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler_state_dict'])
 
             if issubclass(self.lr_scheduler.__class__, lr_scheduler._LRScheduler):
@@ -392,7 +390,7 @@ class NetworkTrainer:
         # load best loss (if present)
         if 'best_stuff' in checkpoint.keys():
             self.best_epoch_based_on_MA_tr_loss, self.best_MA_tr_loss_for_patience, self.best_val_eval_criterion_MA = \
-                checkpoint['best_stuff']
+                    checkpoint['best_stuff']
 
         self._maybe_init_amp()
 
@@ -443,7 +441,7 @@ class NetworkTrainer:
             if self.use_progress_bar:
                 with trange(self.num_batches_per_epoch) as t_bar:
                     for _ in t_bar:
-                        t_bar.set_description('Epoch {}/{}'.format(self.epoch + 1, self.max_num_epochs))
+                        t_bar.set_description(f'Epoch {self.epoch + 1}/{self.max_num_epochs}')
 
                         curr_loss = self.run_iteration(self.tr_gen, True)
 
@@ -461,7 +459,7 @@ class NetworkTrainer:
                 # validation with train=False
                 self.network.eval()
                 val_losses = []
-                for b in range(self.num_val_batches_per_epoch):
+                for _ in range(self.num_val_batches_per_epoch):
                     curr_loss = self.run_iteration(self.val_gen, False, True)
                     val_losses.append(curr_loss)
                 self.all_val_losses.append(np.mean(val_losses))
@@ -471,7 +469,7 @@ class NetworkTrainer:
                     self.network.train()
                     # validation with train=True
                     val_losses = []
-                    for b in range(self.num_val_batches_per_epoch):
+                    for _ in range(self.num_val_batches_per_epoch):
                         curr_loss = self.run_iteration(self.val_gen, False)
                         val_losses.append(curr_loss)
                     self.all_val_losses_tr_mode.append(np.mean(val_losses))
@@ -513,7 +511,9 @@ class NetworkTrainer:
                 self.lr_scheduler.step(self.train_loss_MA)
             else:
                 self.lr_scheduler.step(self.epoch + 1)
-        self.print_to_log_file('lr is now (scheduler) %s' % str(self.optimizer.param_groups[0]['lr']))
+        self.print_to_log_file(
+            f"lr is now (scheduler) {str(self.optimizer.param_groups[0]['lr'])}"
+        )
 
     def maybe_save_checkpoint(self):
         """
@@ -535,21 +535,21 @@ class NetworkTrainer:
         :return:
         """
         if self.val_eval_criterion_MA is None:
-            if len(self.all_val_eval_metrics) == 0:
-                self.val_eval_criterion_MA = - self.all_val_losses[-1]
-            else:
-                self.val_eval_criterion_MA = self.all_val_eval_metrics[-1][0]
-        else:
-            if len(self.all_val_eval_metrics) == 0:
-                '''
+            self.val_eval_criterion_MA = (
+                -self.all_val_losses[-1]
+                if len(self.all_val_eval_metrics) == 0
+                else self.all_val_eval_metrics[-1][0]
+            )
+        elif len(self.all_val_eval_metrics) == 0:
+            '''
                 We here use alpha * old - (1 - alpha) * new because new in this case is the validation loss and lower
                 is better, so we need to negate it.
                 '''
-                self.val_eval_criterion_MA = self.val_eval_criterion_alpha * self.val_eval_criterion_MA - (
-                        1 - self.val_eval_criterion_alpha) * self.all_val_losses[-1]
-            else:
-                self.val_eval_criterion_MA = self.val_eval_criterion_alpha * self.val_eval_criterion_MA + (
-                        1 - self.val_eval_criterion_alpha) * self.all_val_eval_metrics[-1][0]
+            self.val_eval_criterion_MA = self.val_eval_criterion_alpha * self.val_eval_criterion_MA - (
+                    1 - self.val_eval_criterion_alpha) * self.all_val_losses[-1]
+        else:
+            self.val_eval_criterion_MA = self.val_eval_criterion_alpha * self.val_eval_criterion_MA + (
+                    1 - self.val_eval_criterion_alpha) * self.all_val_eval_metrics[-1][0]
 
         self.print_to_log_file('Current validation criterion moving average: ', self.val_eval_criterion_MA)
 
@@ -609,8 +609,7 @@ class NetworkTrainer:
 
         self.update_eval_criterion_MA()
 
-        continue_training = self.manage_patience()
-        return continue_training
+        return self.manage_patience()
 
     def update_train_loss_MA(self):
         if self.train_loss_MA is None:

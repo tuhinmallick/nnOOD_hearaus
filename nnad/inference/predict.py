@@ -67,13 +67,11 @@ def predict_from_folder(model: Path, input_folder_path: Path, output_folder_path
 
         assert not missing_lowres, 'Provide lowres scores for missing files listed above.'
 
-    if overwrite_all_in_gpu is None:
-        all_in_gpu = False
-    else:
-        all_in_gpu = overwrite_all_in_gpu
-
+    all_in_gpu = False if overwrite_all_in_gpu is None else overwrite_all_in_gpu
     # Messy but oh well
-    input_file_suffix = '.png' if '.png' == sample_id_to_files[0][1][0].suffix else '.nii.gz'
+    input_file_suffix = (
+        '.png' if sample_id_to_files[0][1][0].suffix == '.png' else '.nii.gz'
+    )
 
     return predict_cases(model, sample_ids[part_id::num_parts], input_folder_path, input_file_suffix,
                          output_folder_path, folds, save_npz, num_threads_preprocessing, num_threads_nifti_save,
@@ -128,7 +126,7 @@ def predict_cases(model: Path, sample_ids: List[str], input_folder_path: Path, i
                     if not save_npz or found_npz:
                         return False
 
-                if save_npz and f.name == (s_id + '.npz'):
+                if save_npz and f.name == f'{s_id}.npz':
                     found_npz = True
                     if found_file:
                         return False
@@ -139,7 +137,7 @@ def predict_cases(model: Path, sample_ids: List[str], input_folder_path: Path, i
 
         print('Number of cases that still need to be predicted:', len(sample_ids))
 
-    if len(sample_ids) == 0:
+    if not sample_ids:
         print('No samples to predict, so skipping rest of prediction process')
         return
 
@@ -203,11 +201,7 @@ def predict_cases(model: Path, sample_ids: List[str], input_folder_path: Path, i
                 transpose_backward = trainer.plans.get('transpose_backward')
                 scores = scores.transpose([0] + [i + 1 for i in transpose_backward])
 
-            if save_npz:
-                npz_file = output_folder_path / f'{sample_id}.npz'
-            else:
-                npz_file = None
-
+            npz_file = output_folder_path / f'{sample_id}.npz' if save_npz else None
             '''There is a problem with python process communication that prevents us from communicating obejcts 
             larger than 2 GB between processes (basically when the length of the pickle string that will be sent is 
             communicated by the multiprocessing.Pipe object then the placeholder ( I think) does not allow for long 
@@ -280,8 +274,7 @@ def preprocess_save_to_queue(preprocess_fn, q: Queue, sample_ids: List[str], inp
         assert scores_from_prev_stage.is_dir(), 'scores_from_prev_stage in preprocess_save_to_queue is not None, but ' \
                                                 'not a directory!'
 
-    errors_in = []
-    for i, sample_id in enumerate(sample_ids):
+    for sample_id in sample_ids:
         try:
             print('Preprocessing ',  sample_id)
             data, properties = preprocess_fn(input_folder, sample_id)
@@ -320,7 +313,7 @@ def preprocess_save_to_queue(preprocess_fn, q: Queue, sample_ids: List[str], inp
             print('Error in', sample_id)
             print(e)
     q.put('end')
-    if len(errors_in) > 0:
+    if errors_in := []:
         print('There were some errors in the following cases:', errors_in)
         print('These cases were ignored.')
     else:
