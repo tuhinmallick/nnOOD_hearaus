@@ -35,7 +35,10 @@ class DatasetAnalyser:
     @staticmethod
     def get_voxels_in_foreground(image_array: np.ndarray) -> np.ndarray:
 
-        assert len(image_array.shape) in [2, 3], f'Image must have 2 or 3 dimensions: {len(image_array.shape)}'
+        assert len(image_array.shape) in {
+            2,
+            3,
+        }, f'Image must have 2 or 3 dimensions: {len(image_array.shape)}'
 
         mask = image_array > 0
         # Only include every 5, reducing memory with little effect on global statistics

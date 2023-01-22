@@ -54,10 +54,7 @@ def verify_same_geometry(img_1: sitk.Image, img_2: sitk.Image):
         print(size1)
         print(size2)
 
-    if same_ori and same_spac and same_dir and same_size:
-        return True
-    else:
-        return False
+    return bool(same_ori and same_spac and same_dir and same_size)
 
 
 def verify_dataset_integrity(dataset_folder: Path):
@@ -154,7 +151,9 @@ def verify_dataset_integrity(dataset_folder: Path):
                                                           f'{num_expected_test_files}'
 
         test_label_files = [f for f in test_labels_folder.iterdir() if f.is_file()]
-        assert len(test_label_files) >= 1, 'Must have at least 1 ground truth label (cannot be all normal images)!'
+        assert (
+            test_label_files
+        ), 'Must have at least 1 ground truth label (cannot be all normal images)!'
 
         for c in test_ids:
             # Check if all files are present

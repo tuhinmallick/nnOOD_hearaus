@@ -83,7 +83,9 @@ def load_model_and_checkpoint_files(folder: Path, folds=None, mixed_precision=No
     else:
         raise ValueError(f'Unknown value for folds. Type: {type(folds)}. Expected: list of int, int, str or None')
 
-    assert all([f.is_dir() for f in folds]), 'list of folds specified but not all output folders are present'
+    assert all(
+        f.is_dir() for f in folds
+    ), 'list of folds specified but not all output folders are present'
 
     trainer = restore_model(folds[0] / f'{checkpoint_name}.pkl', fp16=mixed_precision)
     trainer.output_folder = folder

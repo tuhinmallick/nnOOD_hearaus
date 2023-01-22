@@ -72,9 +72,7 @@ def main():
     lowres_only = args.lowres_only
 
     if isinstance(folds, list):
-        if folds[0] == 'all' and len(folds) == 1:
-            pass
-        else:
+        if folds[0] != 'all' or len(folds) != 1:
             folds = [int(i) for i in folds]
     elif folds == 'None':
         folds = None
@@ -125,7 +123,13 @@ def main():
         if model == 'cascade_fullres':
             assert lowres_scores.is_dir(), 'Somehow attempting cascade_fullres without lowres_scores being a dir.'
 
-        model_folder = Path(results_base, dataset, task_name, model, curr_trainer + '__' + plans_identifier)
+        model_folder = Path(
+            results_base,
+            dataset,
+            task_name,
+            model,
+            f'{curr_trainer}__{plans_identifier}',
+        )
         print(f'Model is stored in: {model_folder}')
         assert model_folder.is_dir(), f'Model output folder not found, expected: {model_folder}'
 

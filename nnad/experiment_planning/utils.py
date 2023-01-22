@@ -37,7 +37,7 @@ def get_pool_and_conv_props(patch_size: np.ndarray, min_feature_map_size: int, m
         valid_axes_for_pool = [i for i in valid_axes_for_pool if current_size[i] >= 2 * min_feature_map_size
                                and num_pool_per_axis[i] < max_num_pool]
 
-        if len(valid_axes_for_pool) == 0:
+        if not valid_axes_for_pool:
             break
 
         other_axes = [i for i in range(dim) if i not in valid_axes_for_pool]

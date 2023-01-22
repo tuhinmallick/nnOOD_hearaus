@@ -21,7 +21,7 @@ def recursive_find_python_class(folder, class_name, current_module):
     tr = None
     for importer, modname, ispkg in pkgutil.iter_modules(folder):
         if not ispkg:
-            m = importlib.import_module(current_module + "." + modname)
+            m = importlib.import_module(f"{current_module}.{modname}")
             if hasattr(m, class_name):
                 tr = getattr(m, class_name)
                 break
@@ -29,7 +29,7 @@ def recursive_find_python_class(folder, class_name, current_module):
     if tr is None:
         for importer, modname, ispkg in pkgutil.iter_modules(folder):
             if ispkg:
-                next_current_module = current_module + "." + modname
+                next_current_module = f"{current_module}.{modname}"
                 tr = recursive_find_python_class([folder[0], modname], class_name,
                                                  current_module=next_current_module)
             if tr is not None:
@@ -59,15 +59,14 @@ def load_pretrained_weights(network, fname, verbose=False):
     pretrained_dict = new_state_dict
 
     model_dict = network.state_dict()
-    ok = True
-    for key, _ in model_dict.items():
-        if 'conv_blocks' in key:
-            if (key in pretrained_dict) and (model_dict[key].shape == pretrained_dict[key].shape):
-                continue
-            else:
-                ok = False
-                break
-
+    ok = not any(
+        'conv_blocks' in key
+        and (
+            key not in pretrained_dict
+            or model_dict[key].shape != pretrained_dict[key].shape
+        )
+        for key, _ in model_dict.items()
+    )
     # filter unnecessary keys
     if ok:
         pretrained_dict = {k: v for k, v in pretrained_dict.items() if
@@ -77,7 +76,7 @@ def load_pretrained_weights(network, fname, verbose=False):
         print("################### Loading pretrained weights from file ", fname, '###################')
         if verbose:
             print("Below is the list of overlapping blocks in pretrained model and nnUNet architecture:")
-            for key, _ in pretrained_dict.items():
+            for key in pretrained_dict:
                 print(key)
         print("################### Done ###################")
         network.load_state_dict(model_dict)
@@ -132,9 +131,7 @@ def get_sample_ids_and_files(input_folder: Path, expected_modalities: Dict[int, 
     id_to_files_list = []
     # convert dictionary to list, return
     for sample_id, file_dict in id_to_files_dict.items():
-        sample_files = list(file_dict.values())
-        sample_files.sort()
-
+        sample_files = sorted(file_dict.values())
         id_to_files_list.append((sample_id, sample_files))
 
     return id_to_files_list

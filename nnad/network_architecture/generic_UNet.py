@@ -118,12 +118,23 @@ class StackedConvLayers(nn.Module):
 
 
 def print_module_training_status(module):
-    if isinstance(module, nn.Conv2d) or isinstance(module, nn.Conv3d) or isinstance(module, nn.Dropout3d) or \
-            isinstance(module, nn.Dropout2d) or isinstance(module, nn.Dropout) or isinstance(module, nn.InstanceNorm3d)\
-            or isinstance(module, nn.InstanceNorm2d) or isinstance(module, nn.InstanceNorm1d) \
-            or isinstance(module, nn.BatchNorm2d) or isinstance(module, nn.BatchNorm3d) or isinstance(module,
-                                                                                                      nn.BatchNorm1d):
-        print(str(module), module.training)
+    if isinstance(
+        module,
+        (
+            nn.Conv2d,
+            nn.Conv3d,
+            nn.Dropout3d,
+            nn.Dropout2d,
+            nn.Dropout,
+            nn.InstanceNorm3d,
+            nn.InstanceNorm2d,
+            nn.InstanceNorm1d,
+            nn.BatchNorm2d,
+            nn.BatchNorm3d,
+            nn.BatchNorm1d,
+        ),
+    ):
+        print(module, module.training)
 
 
 class Upsample(nn.Module):

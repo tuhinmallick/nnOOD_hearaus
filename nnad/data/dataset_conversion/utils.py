@@ -30,8 +30,16 @@ def generate_dataset_json(output_file: Union[str, Path], train_dir: Union[str, P
     train_path = Path(train_dir)
     test_path = Path(test_dir)
 
-    train_ids = set(['_'.join(f.name.split('_')[:-1]) for f in train_path.iterdir() if f.is_file()])
-    test_ids = set(['_'.join(f.name.split('_')[:-1]) for f in test_path.iterdir() if f.is_file()])
+    train_ids = {
+        '_'.join(f.name.split('_')[:-1])
+        for f in train_path.iterdir()
+        if f.is_file()
+    }
+    test_ids = {
+        '_'.join(f.name.split('_')[:-1])
+        for f in test_path.iterdir()
+        if f.is_file()
+    }
 
     dataset_json = {
         'name': dataset_name,
@@ -39,13 +47,15 @@ def generate_dataset_json(output_file: Union[str, Path], train_dir: Union[str, P
         'reference': dataset_reference,
         'licence': licence,
         'release': dataset_release,
-        'tensorImageSize': '3D' if any('png' in m for m in modalities) else '4D',
+        'tensorImageSize': '3D'
+        if any('png' in m for m in modalities)
+        else '4D',
         'modality': {str(i): modalities[i] for i in range(len(modalities))},
         'numTraining': len(train_ids),
         'numTest': len(test_ids),
-        'training': [ident for ident in train_ids],
-        'test': [ident for ident in test_ids],
+        'training': list(train_ids),
+        'test': list(test_ids),
         'data_augs': data_augs,
-        'has_uniform_background': has_uniform_background
+        'has_uniform_background': has_uniform_background,
     }
     save_json(dataset_json, output_file)

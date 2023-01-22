@@ -17,13 +17,11 @@ from nnad.utils.miscellaneous import make_default_mask
 
 
 def get_do_separate_z(spacing, anisotropy_threshold=RESAMPLING_SEPARATE_Z_ANISO_THRESHOLD):
-    do_separate_z = (np.max(spacing) / np.min(spacing)) > anisotropy_threshold
-    return do_separate_z
+    return (np.max(spacing) / np.min(spacing)) > anisotropy_threshold
 
 
 def get_lowres_axis(new_spacing):
-    axis = np.where(max(new_spacing) / np.array(new_spacing) == 1)[0]  # find which axis is anisotropic
-    return axis
+    return np.where(max(new_spacing) / np.array(new_spacing) == 1)[0]
 
 
 def resample_patient(data, original_spacing, target_spacing, order=3, force_separate_z=False,
@@ -41,7 +39,7 @@ def resample_patient(data, original_spacing, target_spacing, order=3, force_sepa
     :return:
     """
 
-    assert len(data.shape) == 4 or len(data.shape) == 3, f'data must be c x y [z]: {data.shape}'
+    assert len(data.shape) in {4, 3}, f'data must be c x y [z]: {data.shape}'
 
     shape = np.array(data[0].shape)
 
@@ -49,20 +47,16 @@ def resample_patient(data, original_spacing, target_spacing, order=3, force_sepa
 
     if force_separate_z is not None:
         do_separate_z = force_separate_z
-        if force_separate_z:
-            axis = get_lowres_axis(original_spacing)
-        else:
-            axis = None
+        axis = get_lowres_axis(original_spacing) if force_separate_z else None
+    elif get_do_separate_z(original_spacing, separate_z_anisotropy_threshold):
+        do_separate_z = True
+        axis = get_lowres_axis(original_spacing)
+    elif get_do_separate_z(target_spacing, separate_z_anisotropy_threshold):
+        do_separate_z = True
+        axis = get_lowres_axis(target_spacing)
     else:
-        if get_do_separate_z(original_spacing, separate_z_anisotropy_threshold):
-            do_separate_z = True
-            axis = get_lowres_axis(original_spacing)
-        elif get_do_separate_z(target_spacing, separate_z_anisotropy_threshold):
-            do_separate_z = True
-            axis = get_lowres_axis(target_spacing)
-        else:
-            do_separate_z = False
-            axis = None
+        do_separate_z = False
+        axis = None
 
     if axis is not None:
         if len(axis) == len(shape):
@@ -73,9 +67,9 @@ def resample_patient(data, original_spacing, target_spacing, order=3, force_sepa
             # separately in the out of plane axis
             do_separate_z = False
 
-    data_reshaped = resample_data(data, new_shape, axis, order, do_separate_z, order_z=order_z)
-
-    return data_reshaped
+    return resample_data(
+        data, new_shape, axis, order, do_separate_z, order_z=order_z
+    )
 
 
 def resample_data(data, new_shape, axis=None, order=3, do_separate_z=False, order_z=0):
@@ -89,15 +83,15 @@ def resample_data(data, new_shape, axis=None, order=3, do_separate_z=False, orde
     :param order_z: only applies if do_separate_z is True
     :return:
     """
-    assert len(data.shape) == 4 or len(data.shape) == 3, 'data must be (c, x, y[, z])'
-
-    resize_kwargs = {'mode': 'edge', 'anti_aliasing': True}
+    assert len(data.shape) in {4, 3}, 'data must be (c, x, y[, z])'
 
     dtype_data = data.dtype
     shape = np.array(data[0].shape)
     new_shape = np.array(new_shape)
     if np.any(shape != new_shape):
         data = data.astype(float)
+        resize_kwargs = {'mode': 'edge', 'anti_aliasing': True}
+
         if do_separate_z:
             assert len(shape) == 3, f'Should only need to perform separate z sampling on 3D data: {shape}'
             print('Separate z, order in z is', order_z, 'order inplane is', order)
@@ -144,9 +138,10 @@ def resample_data(data, new_shape, axis=None, order=3, do_separate_z=False, orde
             reshaped_final_data = np.vstack(reshaped_final_data)
         else:
             print('No separate z, order', order)
-            reshaped = []
-            for c in range(data.shape[0]):
-                reshaped.append(resize(data[c], new_shape, order, **resize_kwargs)[None])
+            reshaped = [
+                resize(data[c], new_shape, order, **resize_kwargs)[None]
+                for c in range(data.shape[0])
+            ]
             reshaped_final_data = np.vstack(reshaped)
         return reshaped_final_data.astype(dtype_data)
     else:
@@ -166,8 +161,7 @@ class GenericPreprocessor:
 
         self.resample_separate_z_anisotropy_threshold = RESAMPLING_SEPARATE_Z_ANISO_THRESHOLD
 
-    def load_and_combine(self,left_margin, right_margin, sample_identifier: str, input_folder: Path, return_properties: bool = False)\
-            -> Union[Tuple[np.array, OrderedDict], np.array]:
+    def load_and_combine(self,left_margin, right_margin, sample_identifier: str, input_folder: Path, return_properties: bool = False) -> Union[Tuple[np.array, OrderedDict], np.array]:
         all_ndarrays = []
         properties = OrderedDict()
         properties['sample_id'] = sample_identifier
@@ -196,25 +190,22 @@ class GenericPreprocessor:
                     all_ndarrays.append(image_array)
                 else:
                     # Colour, append channels in R, G, B order.
-                    for c in range(image_array.shape[-1]):
-                        # Sitk reads png as [H, W, C], with channels in RGB order
-                        all_ndarrays.append(image_array[:, :, c])
+                    all_ndarrays.extend(image_array[:, :, c] for c in range(image_array.shape[-1]))
             else:
                 # Medical images, assume single modality
                 all_ndarrays.append(image_array)
 
         all_data = np.stack(all_ndarrays)
 
-        if return_properties:
-            properties['channel_intensity_properties'] = OrderedDict()
-            for c in range(all_data.shape[0]):
-                properties['channel_intensity_properties'][c] = OrderedDict()
-                properties['channel_intensity_properties'][c]['mean'] = np.mean(all_data[c])
-                properties['channel_intensity_properties'][c]['sd'] = np.std(all_data[c])
-
-            return all_data, properties
-        else:
+        if not return_properties:
             return all_data
+        properties['channel_intensity_properties'] = OrderedDict()
+        for c in range(all_data.shape[0]):
+            properties['channel_intensity_properties'][c] = OrderedDict()
+            properties['channel_intensity_properties'][c]['mean'] = np.mean(all_data[c])
+            properties['channel_intensity_properties'][c]['sd'] = np.std(all_data[c])
+
+        return all_data, properties
 
     def resample_and_normalise(self, data, target_spacing, properties, force_separate_z):
         original_spacing_transposed = np.array(properties['original_spacing'])[self.transpose_forward]

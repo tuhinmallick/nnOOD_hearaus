@@ -23,22 +23,20 @@ def _flatten_all(predictions: Union[List[np.ndarray], np.ndarray], labels: Union
 
 def auroc(predictions: Union[List[np.ndarray], np.ndarray], labels: Union[List[np.ndarray], np.ndarray], **kwargs):
     predictions, labels = _flatten_all(predictions, labels)
-    if kwargs.get('return_curve', False):
-        fpr, tpr, _ = metrics.roc_curve(labels, predictions)
-        return metrics.roc_auc_score(labels, predictions), fpr, tpr
-    else:
+    if not kwargs.get('return_curve', False):
         return metrics.roc_auc_score(labels, predictions)
+    fpr, tpr, _ = metrics.roc_curve(labels, predictions)
+    return metrics.roc_auc_score(labels, predictions), fpr, tpr
 
 
 def average_precision(predictions: Union[List[np.ndarray], np.ndarray], labels: Union[List[np.ndarray], np.ndarray],
                       **kwargs):
     predictions, labels = _flatten_all(predictions, labels)
-    if kwargs.get('return_curve', False):
-        precision, recall, _ = metrics.precision_recall_curve(labels, predictions)
-        # Don't use auc function, as that uses trapezoidal rule which can be too optimistic
-        return metrics.average_precision_score(labels, predictions), precision, recall
-    else:
+    if not kwargs.get('return_curve', False):
         return metrics.average_precision_score(labels, predictions)
+    precision, recall, _ = metrics.precision_recall_curve(labels, predictions)
+    # Don't use auc function, as that uses trapezoidal rule which can be too optimistic
+    return metrics.average_precision_score(labels, predictions), precision, recall
 
 
 def per_region_overlap(predictions: List[np.ndarray], labels: List[np.ndarray], **kwargs):

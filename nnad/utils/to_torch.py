@@ -3,7 +3,7 @@ import torch
 
 def maybe_to_torch(d):
     if isinstance(d, list):
-        d = [maybe_to_torch(i) if not isinstance(i, torch.Tensor) else i for i in d]
+        d = [i if isinstance(i, torch.Tensor) else maybe_to_torch(i) for i in d]
     elif not isinstance(d, torch.Tensor):
         d = torch.from_numpy(d).float()
     return d

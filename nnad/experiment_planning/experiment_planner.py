@@ -77,14 +77,14 @@ class ExperimentPlanner:
         input_patch_size = np.array([min(i, j) for i, j in zip(input_patch_size, new_median_shape)])
 
         network_num_pool_per_axis, pool_op_kernel_sizes, conv_kernel_sizes, new_shape, shape_must_be_divisible_by \
-            = get_pool_and_conv_props(input_patch_size,
+                = get_pool_and_conv_props(input_patch_size,
                                       self.unet_feature_map_min_edge_length,
                                       self.unet_max_num_pool,
                                       current_spacing)
 
         # Unsure of 2D case, revisit numbers if gives weirdly small/big batch sizes (target 50?)
         ref = Generic_UNet.use_this_for_batch_size_computation_3D if self.using_3d_data()\
-            else Generic_UNet.use_this_for_batch_size_computation_2D
+                else Generic_UNet.use_this_for_batch_size_computation_2D
         here = Generic_UNet.compute_approx_vram_consumption(new_shape, network_num_pool_per_axis,
                                                             self.unet_base_num_features,
                                                             self.unet_max_num_filters, num_input_channels,
@@ -95,7 +95,7 @@ class ExperimentPlanner:
             tmp = deepcopy(new_shape)
             tmp[axis_to_be_reduced] -= shape_must_be_divisible_by[axis_to_be_reduced]
             _, _, _, _, shape_must_be_divisible_by_new = \
-                get_pool_and_conv_props(tmp,
+                    get_pool_and_conv_props(tmp,
                                         self.unet_feature_map_min_edge_length,
                                         self.unet_max_num_pool,
                                         current_spacing)
@@ -103,7 +103,7 @@ class ExperimentPlanner:
 
             # we have to recompute num_pool now:
             network_num_pool_per_axis, pool_op_kernel_sizes, conv_kernel_sizes, new_shape, shape_must_be_divisible_by \
-                = get_pool_and_conv_props(new_shape,
+                    = get_pool_and_conv_props(new_shape,
                                           self.unet_feature_map_min_edge_length,
                                           self.unet_max_num_pool,
                                           current_spacing)
@@ -128,7 +128,7 @@ class ExperimentPlanner:
         do_dummy_2D_data_aug = (max(input_patch_size) / input_patch_size[
             0]) > self.anisotropy_threshold
 
-        plan = {
+        return {
             'batch_size': batch_size,
             'num_pool_per_axis': network_num_pool_per_axis,
             'patch_size': input_patch_size,
@@ -139,7 +139,6 @@ class ExperimentPlanner:
             'pool_op_kernel_sizes': pool_op_kernel_sizes,
             'conv_kernel_sizes': conv_kernel_sizes,
         }
-        return plan
 
     def save_my_plans(self):
         save_pickle(self.plans, self.plans_path)
@@ -157,7 +156,7 @@ class ExperimentPlanner:
         spacings = self.dataset_properties['all_spacings']
         sizes = self.dataset_properties['all_sizes']
         modalities = self.dataset_properties['modalities']
-        num_modalities = sum([num_modality_components(m) for m in modalities.values()])
+        num_modalities = sum(num_modality_components(m) for m in modalities.values())
 
         target_spacing = np.percentile(np.vstack(spacings), self.target_spacing_percentile, 0)
         new_shapes = [np.array(i) / target_spacing * np.array(j) for i, j in zip(spacings, sizes)]
@@ -177,7 +176,7 @@ class ExperimentPlanner:
 
         print('Minimum feature length in bottleneck: ', self.unet_feature_map_min_edge_length)
 
-        self.plans_per_stage = list()
+        self.plans_per_stage = []
 
         target_spacing_transposed = np.array(target_spacing)[self.transpose_forward]
         median_shape_transposed = np.array(median_shape)[self.transpose_forward]
@@ -200,7 +199,7 @@ class ExperimentPlanner:
                 max_spacing = max(lowres_stage_spacing)
                 if np.any((max_spacing / lowres_stage_spacing) > 2):
                     lowres_stage_spacing[(max_spacing / lowres_stage_spacing) > 2] \
-                        *= 1.01
+                            *= 1.01
                 else:
                     lowres_stage_spacing *= 1.01
                 num_voxels = np.prod(target_spacing / lowres_stage_spacing * median_shape, dtype=np.float64)

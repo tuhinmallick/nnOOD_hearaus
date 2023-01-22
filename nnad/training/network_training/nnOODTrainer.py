@@ -117,17 +117,18 @@ class nnOODTrainer(NetworkTrainer):
         :param fold:
         :return:
         """
-        if fold is not None:
-            if isinstance(fold, str):
-                assert fold == 'all', 'If self.fold is a string then it must be \'all\''
-                if self.output_folder.name.endswith(str(self.fold)):
-                    self.output_folder = self.output_folder_base
-                self.output_folder = self.output_folder / str(fold)
-            else:
-                if self.output_folder.name.endswith('fold_%s' % str(self.fold)):
-                    self.output_folder = self.output_folder_base
-                self.output_folder = self.output_folder / f'fold_{fold}'
-            self.fold = fold
+        if fold is None:
+            return
+        if isinstance(fold, str):
+            assert fold == 'all', 'If self.fold is a string then it must be \'all\''
+            if self.output_folder.name.endswith(str(self.fold)):
+                self.output_folder = self.output_folder_base
+            self.output_folder = self.output_folder / str(fold)
+        else:
+            if self.output_folder.name.endswith(f'fold_{str(self.fold)}'):
+                self.output_folder = self.output_folder_base
+            self.output_folder = self.output_folder / f'fold_{fold}'
+        self.fold = fold
 
     def setup_DA_params(self):
         if self.threeD:
@@ -136,9 +137,9 @@ class nnOODTrainer(NetworkTrainer):
                 self.data_aug_params['dummy_2D'] = True
                 self.print_to_log_file('Using dummy2d data augmentation')
                 self.data_aug_params['elastic_deform_alpha'] = \
-                    default_2D_augmentation_params['elastic_deform_alpha']
+                        default_2D_augmentation_params['elastic_deform_alpha']
                 self.data_aug_params['elastic_deform_sigma'] = \
-                    default_2D_augmentation_params['elastic_deform_sigma']
+                        default_2D_augmentation_params['elastic_deform_sigma']
                 self.data_aug_params['rotation_x'] = default_2D_augmentation_params['rotation_x']
         else:
             self.do_dummy_2D_aug = False
@@ -149,11 +150,11 @@ class nnOODTrainer(NetworkTrainer):
             return tuple(new_list)
 
         for aug, aug_args in self.valid_data_augs.items():
-            self.data_aug_params['do_' + aug] = True
+            self.data_aug_params[f'do_{aug}'] = True
 
             if aug == 'elastic':
                 for p in ['deform_alpha', 'deform_sigma']:
-                    self.data_aug_params['elastic_' + p] = list_to_range(aug_args[p])
+                    self.data_aug_params[f'elastic_{p}'] = list_to_range(aug_args[p])
 
             elif aug == 'scaling':
                 self.data_aug_params['scale_range'] = list_to_range(aug_args['scale_range'])
@@ -176,14 +177,14 @@ class nnOODTrainer(NetworkTrainer):
 
                 for a in mirror_axes:
                     assert a < len(self.patch_size), f'Cannot mirror in axis {a} as patch size only hase dimensions' \
-                                                     f'{self.patch_size}'
+                                                         f'{self.patch_size}'
 
                 self.data_aug_params['mirror_axes'] = tuple(mirror_axes)
 
             elif aug == 'additive_brightness':
 
                 for p in ['mu', 'sigma']:
-                    self.data_aug_params['additive_brightness_' + p] = aug_args[p]
+                    self.data_aug_params[f'additive_brightness_{p}'] = aug_args[p]
 
             elif aug in ['gaussian_noise', 'gaussian_blur', 'brightness_multiplicative', 'contrast_aug', 'sim_low_res']:
                 assert False, f'Augmentation "{aug}" is not implemented'
@@ -327,9 +328,8 @@ class nnOODTrainer(NetworkTrainer):
         # saving some debug information
         dct = OrderedDict()
         for k in self.__dir__():
-            if not k.startswith('__'):
-                if not callable(getattr(self, k)):
-                    dct[k] = str(getattr(self, k))
+            if not k.startswith('__') and not callable(getattr(self, k)):
+                dct[k] = str(getattr(self, k))
         del dct['plans']
         del dct['intensity_properties']
         del dct['dataset']
@@ -355,8 +355,8 @@ class nnOODTrainer(NetworkTrainer):
     def process_plans(self, plans):
         if self.stage is None:
             assert len(list(plans['plans_per_stage'].keys())) == 1, \
-                'If self.stage is None then there can be only one stage in the plans file. That seems to not be the ' \
-                'case. Please specify which stage of the cascade must be trained'
+                    'If self.stage is None then there can be only one stage in the plans file. That seems to not be the ' \
+                    'case. Please specify which stage of the cascade must be trained'
             self.stage = list(plans['plans_per_stage'].keys())[0]
         self.plans = plans
 
@@ -387,7 +387,7 @@ class nnOODTrainer(NetworkTrainer):
         elif len(self.patch_size) == 3:
             self.threeD = True
         else:
-            raise RuntimeError('Invalid patch size in plans file: %s' % str(self.patch_size))
+            raise RuntimeError(f'Invalid patch size in plans file: {str(self.patch_size)}')
 
         self.conv_per_stage = plans['conv_per_stage']
 
@@ -492,9 +492,9 @@ class nnOODTrainer(NetworkTrainer):
 
         if do_mirroring:
             assert self.data_aug_params['do_mirror'], 'Cannot do mirroring as test time augmentation when training ' \
-                                                      'was done without mirroring'
+                                                          'was done without mirroring'
 
-        valid = list((AnomalyScoreNetwork, nn.DataParallel))
+        valid = [AnomalyScoreNetwork, nn.DataParallel]
         assert isinstance(self.network, tuple(valid))
 
         current_mode = self.network.training
@@ -671,33 +671,34 @@ class nnOODTrainer(NetworkTrainer):
         self.network.train(current_mode)
 
     def run_online_evaluation(self, output, target):
-        if self.track_metrics:
-            # TODO: do I need to apply final inference?? YESSSSS
-            # TODO: why take only first channel??
-            output = output[:, 0].detach().cpu().numpy().flatten()
-            target = target[:, 0].detach().cpu().numpy().flatten()
+        if not self.track_metrics:
+            return
+        # TODO: do I need to apply final inference?? YESSSSS
+        # TODO: why take only first channel??
+        output = output[:, 0].detach().cpu().numpy().flatten()
+        target = target[:, 0].detach().cpu().numpy().flatten()
 
-            # Binarise labels, so we can compute average precision/ ROC AUC
-            target[target != 0] = 1
-            if not (target > 0).any():
-                self.online_eval_overflow.append((output, target))
-            else:
-                if len(self.online_eval_overflow) > 0:
-                    all_outputs = [o for o, _ in self.online_eval_overflow]
-                    all_outputs.append(output)
-                    output = np.concatenate(all_outputs)
+        # Binarise labels, so we can compute average precision/ ROC AUC
+        target[target != 0] = 1
+        if not (target > 0).any():
+            self.online_eval_overflow.append((output, target))
+        else:
+            if len(self.online_eval_overflow) > 0:
+                all_outputs = [o for o, _ in self.online_eval_overflow]
+                all_outputs.append(output)
+                output = np.concatenate(all_outputs)
 
-                    all_targets = [t for _, t in self.online_eval_overflow]
-                    all_targets.append(target)
-                    target = np.concatenate(all_targets)
+                all_targets = [t for _, t in self.online_eval_overflow]
+                all_targets.append(target)
+                target = np.concatenate(all_targets)
 
-                    self.online_eval_overflow = []
+                self.online_eval_overflow = []
 
-                if self.track_ap:
-                    self.online_eval_ap.append(metrics.average_precision_score(target, output))
+            if self.track_ap:
+                self.online_eval_ap.append(metrics.average_precision_score(target, output))
 
-                if self.track_auroc:
-                    self.online_eval_auroc.append(metrics.roc_auc_score(target, output))
+            if self.track_auroc:
+                self.online_eval_auroc.append(metrics.roc_auc_score(target, output))
 
     def finish_online_evaluation(self):
         results = {}
@@ -722,7 +723,7 @@ class nnOODTrainer(NetworkTrainer):
             if print_smth:
                 self.print_to_log_file('(Estimated by averaging over validation batches, so not exact)')
 
-            if len(metrics_record) > 0:
+            if metrics_record:
                 self.all_val_eval_metrics.append(metrics_record)
 
             self.online_eval_ap = []

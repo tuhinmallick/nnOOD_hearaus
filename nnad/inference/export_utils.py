@@ -48,7 +48,7 @@ def save_data_as_file(data: Union[str, Path, np.ndarray], out_file_name: Path,
     if verbose:
         print("force_separate_z:", force_separate_z, "interpolation order:", order)
 
-    if isinstance(data, str) or isinstance(data, Path):
+    if isinstance(data, (str, Path)):
         data = Path(data)
         assert data.is_file()
         del_file = deepcopy(data)

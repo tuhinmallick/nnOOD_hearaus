@@ -19,7 +19,9 @@ def get_object_mask(img):
 
     all_corner_ranges = [[(0, l) if c == 0 else (c - l, c) for c, l in zip(c_coord, corner_lens)]
                          for c_coord in img_corners]
-    corner_patch_slices = [tuple([slice(lb, ub) for lb, ub in cr]) for cr in all_corner_ranges]
+    corner_patch_slices = [
+        tuple(slice(lb, ub) for lb, ub in cr) for cr in all_corner_ranges
+    ]
 
     num_corner_seed_points = 2 ** len(image_shape)
 
@@ -36,7 +38,7 @@ def get_object_mask(img):
             patch_tolerance = sobel_channel[c_s].std()
 
             for _ in range(num_corner_seed_points):
-                random_c = tuple([np.random.randint(lb, ub) for lb, ub in c_r])
+                random_c = tuple(np.random.randint(lb, ub) for lb, ub in c_r)
 
                 curr_channel_masks.append(segmentation.flood(sobel_channel, random_c, tolerance=patch_tolerance))
 

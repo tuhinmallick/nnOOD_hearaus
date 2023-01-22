@@ -69,7 +69,7 @@ def denormalise(data, normalisation_scheme_per_modality, intensity_properties, c
 
 def modality_norm_scheme(mod: str):
 
-    if mod == 'CT' or mod == 'ct':
+    if mod in {'CT', 'ct'}:
         return 'ct'
     elif mod in GLOBAL_NORMALISATION_MODALITIES:
         return 'global-z'

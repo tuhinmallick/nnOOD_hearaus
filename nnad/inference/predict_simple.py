@@ -109,15 +109,9 @@ def main():
     input_folder = Path(input_folder)
     output_folder = Path(output_folder)
 
-    if lowres_scores == 'None':
-        lowres_scores = None
-    else:
-        lowres_scores = Path(lowres_scores)
-
+    lowres_scores = None if lowres_scores == 'None' else Path(lowres_scores)
     if isinstance(folds, list):
-        if folds[0] == 'all' and len(folds) == 1:
-            pass
-        else:
+        if folds[0] != 'all' or len(folds) != 1:
             folds = [int(i) for i in folds]
     elif folds == 'None':
         folds = None
@@ -140,9 +134,16 @@ def main():
                                                 'inference of the cascade, custom values for part_id and num_parts ' \
                                                 'are not supported. If you wish to have multiple parts, please ' \
                                                 'run the lowres inference first (separately)'
-        model_folder = Path(results_base, dataset, task_name, 'lowres', trainer_class_name + '__' +
-                            args.plans_identifier)
-        assert model_folder.is_dir(), 'model output folder not found. Expected: %s' % model_folder
+        model_folder = Path(
+            results_base,
+            dataset,
+            task_name,
+            'lowres',
+            f'{trainer_class_name}__{args.plans_identifier}',
+        )
+        assert (
+            model_folder.is_dir()
+        ), f'model output folder not found. Expected: {model_folder}'
         lowres_output_folder = output_folder / 'lowres_predictions'
         predict_from_folder(model_folder, input_folder, lowres_output_folder, folds, False, num_threads_preprocessing,
                             num_threads_save, None, part_id, num_parts, not disable_tta,
@@ -159,9 +160,17 @@ def main():
     else:
         trainer = trainer_class_name
 
-    model_folder = Path(results_base, dataset, task_name, model, trainer + '__' + args.plans_identifier)
+    model_folder = Path(
+        results_base,
+        dataset,
+        task_name,
+        model,
+        f'{trainer}__{args.plans_identifier}',
+    )
     print('using model stored in ', model_folder)
-    assert model_folder.is_dir(), 'model output folder not found. Expected: %s' % model_folder
+    assert (
+        model_folder.is_dir()
+    ), f'model output folder not found. Expected: {model_folder}'
 
     predict_from_folder(model_folder, input_folder, output_folder, folds, save_npz, num_threads_preprocessing,
                         num_threads_save, lowres_scores, part_id, num_parts, not disable_tta,

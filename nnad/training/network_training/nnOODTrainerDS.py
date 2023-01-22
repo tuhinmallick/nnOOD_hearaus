@@ -13,8 +13,11 @@ class nnOODTrainerDS(nnOODTrainer):
 
     def setup_DA_params(self):
         super(nnOODTrainerDS, self).setup_DA_params()
-        self.deep_supervision_scales = [[1, 1, 1]] + list(list(i) for i in 1 / np.cumprod(
-            np.vstack(self.net_num_pool_op_kernel_sizes), axis=0))[:-1]
+        self.deep_supervision_scales = [[1, 1, 1]] + [
+            list(i)
+            for i in 1
+            / np.cumprod(np.vstack(self.net_num_pool_op_kernel_sizes), axis=0)
+        ][:-1]
 
     def initialize(self, training=True, force_load_plans=False):
         """
@@ -36,7 +39,7 @@ class nnOODTrainerDS(nnOODTrainer):
             weights = np.array([1 / (2 ** i) for i in range(net_numpool)])
 
             # We don't use the lowest 2 outputs. Normalize weights so that they sum to 1
-            mask = np.array([True] + [True if i < net_numpool - 1 else False for i in range(1, net_numpool)])
+            mask = np.array([True] + [i < net_numpool - 1 for i in range(1, net_numpool)])
             weights[~mask] = 0
             weights = weights / weights.sum()
             self.ds_loss_weights = weights

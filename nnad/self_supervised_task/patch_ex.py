@@ -15,8 +15,7 @@ def patch_ex(img_dest: np.ndarray, img_src: Optional[np.ndarray] = None, same: b
              return_anomaly_locations: bool = False, binary_factor: bool = True, min_overlap_pct: float = 0.25,
              width_bounds_pct: Union[Tuple[float, float], List[Tuple[float, float]]] = (0.05, 0.4),
              min_object_pct: float = 0.25, dest_bbox: Optional[np.ndarray] = None, extract_within_bbox: bool = False,
-             skip_background: Optional[Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]] = None, verbose=True) \
-        -> Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, List[np.ndarray]]]:
+             skip_background: Optional[Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]] = None, verbose=True) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, List[np.ndarray]]]:
     """
     Create a synthetic training example from the given images by pasting/blending random patches.
     Args:
@@ -45,16 +44,15 @@ def patch_ex(img_dest: np.ndarray, img_src: Optional[np.ndarray] = None, same: b
     """
     img_src = img_dest.copy() if same or (img_src is None) else img_src
 
-    if skip_background is not None:
-        if same:
-            dest_object_mask = src_object_mask = skip_background
-        else:
-            dest_object_mask = skip_background[0]
-            src_object_mask = skip_background[1]
-
-    else:
+    if skip_background is None:
         dest_object_mask = None
         src_object_mask = None
+
+    elif same:
+        dest_object_mask = src_object_mask = skip_background
+    else:
+        dest_object_mask = skip_background[0]
+        src_object_mask = skip_background[1]
 
     # add patches
     mask = np.zeros_like(img_dest[0], dtype=bool)  # single channel
@@ -66,11 +64,7 @@ def patch_ex(img_dest: np.ndarray, img_src: Optional[np.ndarray] = None, same: b
     # Shape (spatial_dimensions, 2)
     width_bounds_pct = np.array(width_bounds_pct)
 
-    if binary_factor:
-        factor = 1.0
-    else:
-        factor = np.random.uniform(0.05, 0.95)
-
+    factor = 1.0 if binary_factor else np.random.uniform(0.05, 0.95)
     anomaly_centres = []
 
     dest_bbox_lbs = np.zeros(len(img_dest.shape) - 1, dtype=int) if dest_bbox is None else dest_bbox[:, 0]
@@ -105,8 +99,7 @@ def _patch_ex(ima_dest: np.ndarray, ima_src: np.ndarray, dest_object_mask: Optio
               src_object_mask: Optional[np.ndarray], shape_maker: PatchShapeMaker,
               patch_transforms: List[PatchTransform], blender: PatchBlender,
               width_bounds_pct: np.ndarray, min_object_pct: float, min_overlap_pct: float, factor: float,
-              verbose: bool, dest_bbox_lbs: np.ndarray, dest_bbox_ubs: np.ndarray, extract_within_bbox: bool) \
-        -> Tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
+              verbose: bool, dest_bbox_lbs: np.ndarray, dest_bbox_ubs: np.ndarray, extract_within_bbox: bool) -> Tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
     skip_background = (src_object_mask is not None) and (dest_object_mask is not None)
     dims = np.array(ima_dest.shape)
     bbox_shape = dest_bbox_ubs - dest_bbox_lbs
@@ -114,7 +107,8 @@ def _patch_ex(ima_dest: np.ndarray, ima_src: np.ndarray, dest_object_mask: Optio
     min_dim_lens = (width_bounds_pct[:, 0] * bbox_shape).round().astype(int)
     max_dim_lens = (width_bounds_pct[:, 1] * bbox_shape).round().astype(int)
     dim_bounds = list(zip(min_dim_lens, max_dim_lens))
-    import pdb;pdb.set_trace()
+    import pdb
+    pdb.set_trace()
     patch_mask = shape_maker(dim_bounds, bbox_shape)
 
     found_patch = False
@@ -132,7 +126,7 @@ def _patch_ex(ima_dest: np.ndarray, ima_src: np.ndarray, dest_object_mask: Optio
 
         for d in range(len(patch_centre_bounds)):
             curr_lb, curr_ub = patch_centre_bounds[d]
-            other_dims = tuple([d2 for d2 in range(len(patch_centre_bounds)) if d2 != d])
+            other_dims = tuple(d2 for d2 in range(len(patch_centre_bounds)) if d2 != d)
             obj_m_min_ind, obj_m_max_ind = np.nonzero(np.any(src_object_mask, axis=other_dims))[0][[0, -1]]
 
             patch_centre_bounds[d] = (max(curr_lb, obj_m_min_ind), min(curr_ub, obj_m_max_ind))
@@ -150,7 +144,12 @@ def _patch_ex(ima_dest: np.ndarray, ima_src: np.ndarray, dest_object_mask: Optio
         patch_min_indices = np.maximum(-min_corner, 0)
         patch_max_indices = patch_dims - np.maximum(max_corner - dims[1:], 0)
 
-        test_patch_mask = patch_mask[tuple([slice(lb, ub) for (lb, ub) in zip(patch_min_indices, patch_max_indices)])]
+        test_patch_mask = patch_mask[
+            tuple(
+                slice(lb, ub)
+                for (lb, ub) in zip(patch_min_indices, patch_max_indices)
+            )
+        ]
         test_patch_corner = np.maximum(min_corner, 0)
 
         if skip_background:

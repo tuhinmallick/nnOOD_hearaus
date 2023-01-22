@@ -92,7 +92,7 @@ class AnomalyScoreNetwork(NeuralNetwork, ABC):
         torch.cuda.empty_cache()
 
         assert step_size <= 1, 'step_size must be smaller than 1. Otherwise there will be a gap between consecutive ' \
-                               'predictions'
+                                   'predictions'
 
         if verbose:
             print('debug: mirroring', do_mirroring, 'mirror_axes', mirror_axes)
@@ -103,12 +103,10 @@ class AnomalyScoreNetwork(NeuralNetwork, ABC):
         # A very long time ago (in nnU-Net) the mirror axes were (2, 3, 4) for a 3d network. This is just to intercept
         # any old code that uses this convention
         if len(mirror_axes):
-            if self.conv_op == nn.Conv2d:
-                if max(mirror_axes) > 1:
-                    raise ValueError('mirror axes. duh')
-            if self.conv_op == nn.Conv3d:
-                if max(mirror_axes) > 2:
-                    raise ValueError('mirror axes. duh')
+            if self.conv_op == nn.Conv2d and max(mirror_axes) > 1:
+                raise ValueError('mirror axes. duh')
+            if self.conv_op == nn.Conv3d and max(mirror_axes) > 2:
+                raise ValueError('mirror axes. duh')
 
         if self.training:
             print('WARNING! Network is in train mode during inference. This may be intended, or not...')
@@ -120,11 +118,7 @@ class AnomalyScoreNetwork(NeuralNetwork, ABC):
         else:
             assert False, f'Network conv_op is neither 3d nor 2d: {self.conv_op}'
 
-        if mixed_precision:
-            context = autocast
-        else:
-            context = no_op
-
+        context = autocast if mixed_precision else no_op
         pos_enc = make_pos_enc(np.array(x.shape)[1:])
 
         with context():
@@ -226,8 +220,10 @@ class AnomalyScoreNetwork(NeuralNetwork, ABC):
         # we only need to compute that once. It can take a while to compute this due to the large sigma in
         # gaussian_filter
         if use_gaussian and num_tiles > 1:
-            if self._gaussian_3d is None or not all(
-                    [i == j for i, j in zip(patch_size, self._patch_size_for_gaussian_3d)]):
+            if self._gaussian_3d is None or any(
+                i != j
+                for i, j in zip(patch_size, self._patch_size_for_gaussian_3d)
+            ):
                 if verbose:
                     print('computing Gaussian')
                 gaussian_importance_map = self._get_gaussian(patch_size, sigma_scale=1. / 8)
@@ -341,7 +337,7 @@ class AnomalyScoreNetwork(NeuralNetwork, ABC):
         assert len(min_size) == 2, f'Minimum patch size for 2D prediction must be 2D: {min_size}'
 
         assert self.input_shape_must_be_divisible_by is not None, 'input_shape_must_be_divisible_by must be set to ' \
-                                                                  'run _internal_predict_2D'
+                                                                      'run _internal_predict_2D'
         if verbose:
             print('do mirror:', do_mirroring)
 
@@ -358,9 +354,7 @@ class AnomalyScoreNetwork(NeuralNetwork, ABC):
                                                                        (len(slicer) - 1))] + slicer[1:])
         predicted_probabilities = predicted_probabilities[slicer]
 
-        predicted_probabilities = predicted_probabilities.detach().cpu().numpy()
-
-        return predicted_probabilities
+        return predicted_probabilities.detach().cpu().numpy()
 
     def _internal_predict_3D(self, x: np.ndarray, pos_enc: np.ndarray, min_size: Tuple[int, ...], do_mirroring: bool,
                              mirror_axes: tuple = (0, 1, 2),
@@ -372,7 +366,7 @@ class AnomalyScoreNetwork(NeuralNetwork, ABC):
         assert len(x.shape) == 4, 'x must be (c, x, y, z)'
 
         assert self.input_shape_must_be_divisible_by is not None, 'input_shape_must_be_divisible_by must be set to ' \
-                                                                  'run _internal_predict_3D_3Dconv'
+                                                                      'run _internal_predict_3D_3Dconv'
         if verbose:
             print('do mirror:', do_mirroring)
 
@@ -389,9 +383,7 @@ class AnomalyScoreNetwork(NeuralNetwork, ABC):
                                                                        (len(slicer) - 1))] + slicer[1:])
         predicted_probabilities = predicted_probabilities[slicer]
 
-        predicted_probabilities = predicted_probabilities.detach().cpu().numpy()
-
-        return predicted_probabilities
+        return predicted_probabilities.detach().cpu().numpy()
 
     def _internal_maybe_mirror_and_pred_3D(self, x: Union[np.ndarray, torch.Tensor],
                                            pos_enc: Union[np.ndarray, torch.Tensor], mirror_axes: tuple,
@@ -560,8 +552,10 @@ class AnomalyScoreNetwork(NeuralNetwork, ABC):
         # we only need to compute that once. It can take a while to compute this due to the large sigma in
         # gaussian_filter
         if use_gaussian and num_tiles > 1:
-            if self._gaussian_2d is None or not all(
-                    [i == j for i, j in zip(patch_size, self._patch_size_for_gaussian_2d)]):
+            if self._gaussian_2d is None or any(
+                i != j
+                for i, j in zip(patch_size, self._patch_size_for_gaussian_2d)
+            ):
                 if verbose:
                     print('computing Gaussian')
                 gaussian_importance_map = self._get_gaussian(patch_size, sigma_scale=1. / 8)

@@ -34,7 +34,7 @@ def extract_dest_patch_mask(patch_corner: np.ndarray, patch_shape: Tuple[int], d
 
 
 def get_patch_slices(patch_corner: np.ndarray, patch_shape: Tuple[int]) -> Tuple[slice]:
-    return tuple([slice(c, c + d) for (c, d) in zip(patch_corner, patch_shape)])
+    return tuple(slice(c, c + d) for (c, d) in zip(patch_corner, patch_shape))
 
 
 # Same as above, but with additional slice at beginning to include all image channels.

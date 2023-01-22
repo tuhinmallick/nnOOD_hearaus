@@ -11,8 +11,8 @@ if __name__ == '__main__':
 
     match = re.search(r'(.*\.)(\d+)$', default_plans_identifier)
     assert match is not None, f"Default plans identifier doesn't match expected pattern: {default_plans_identifier}"
-    plans_id_stem = match.group(1)
-    curr_id_num = int(match.group(2))
+    plans_id_stem = match[1]
+    curr_id_num = int(match[2])
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--copy_from', required=False, default=plans_id_stem + str(curr_id_num - 1),

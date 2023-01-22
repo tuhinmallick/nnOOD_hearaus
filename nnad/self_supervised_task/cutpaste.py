@@ -84,10 +84,18 @@ class CutPaste(SelfSupTask):
         if not self.calibrated:
             print('WARNING: CutPaste has not been calibrated, so cannot use PseudoBrightness transform')
 
-        result = patch_ex(sample, same=True, shape_maker=self.shape_maker, patch_transforms=self.transformations,
-                          blender=self.blender, labeller=self.labeller, binary_factor=True, dest_bbox=dest_bbox,
-                          return_anomaly_locations=return_locations, width_bounds_pct=(0.15, 0.30))
-        return result
+        return patch_ex(
+            sample,
+            same=True,
+            shape_maker=self.shape_maker,
+            patch_transforms=self.transformations,
+            blender=self.blender,
+            labeller=self.labeller,
+            binary_factor=True,
+            dest_bbox=dest_bbox,
+            return_anomaly_locations=return_locations,
+            width_bounds_pct=(0.15, 0.30),
+        )
 
     def loss(self, pred, target):
         return F.binary_cross_entropy_with_logits(pred, target)
