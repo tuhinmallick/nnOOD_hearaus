@@ -11,7 +11,21 @@ from nnad.utils.file_operations import load_pickle
 
 
 def main():
+    """
+    This function is the main entry point for the nnOOD pipeline for inference. It takes command-line arguments that
+    define the task, dataset, and models to use for inference. It runs the model inference and writes the predictions to
+    the output directory. It also performs evaluation on the test data and reports the results.
+
+    Args:
+        - None
+
+    Returns:
+        - None
+    """
+    # Set up argparse to read in command line arguments
     parser = argparse.ArgumentParser()
+
+    # Required arguments
     parser.add_argument('-d', '--dataset', help='Dataset which the model was trained on.', required=True)
     parser.add_argument('-t', '--task_name', help='Self-supervised task which the model was trained on', required=True)
     parser.add_argument('-tr', '--trainer_class_name',
@@ -21,6 +35,8 @@ def main():
                              'resolution anomaly maps will be automatically generated. For this case, make sure to set '
                              'the trainer class here that matches your --cascade_trainer_class_name.',
                         required=True)
+
+    # Optional arguments
     parser.add_argument('-ctr', '--cascade_trainer_class_name',
                         help='Trainer class name used for predicting the full resolution U-Net part of the cascade.',
                         default=None, required=False)
@@ -56,73 +72,99 @@ def main():
     parser.add_argument('--lowres_only', required=False, default=False, action='store_true',
                         help='Set this flag if you want to only use the lowres stage of a 2 step pipeline')
 
-    args = parser.parse_args()
-    task_name = args.task_name
-    dataset = args.dataset
-    plans_identifier = args.plans_identifier
-    folds = args.folds
-    num_threads_preprocessing = args.num_threads_preprocessing
-    num_threads_save = args.num_threads_save
-    disable_tta = args.disable_tta
-    step_size = args.step_size
-    overwrite_existing = args.overwrite_existing
-    all_in_gpu = args.all_in_gpu
-    trainer_class_name = args.trainer_class_name
-    cascade_trainer_class_name = args.cascade_trainer_class_name
-    lowres_only = args.lowres_only
+    args = parser.parse_args()   # Parse command line arguments
+    task_name = args.task_name   # Get the self-supervised task name from the arguments
+    dataset = args.dataset       # Get the dataset name from the arguments
+    plans_identifier = args.plans_identifier  # Get the plans identifier from the arguments
+    folds = args.folds          # Get the folds to use for prediction from the arguments
+    num_threads_preprocessing = args.num_threads_preprocessing  # Get the number of threads for data preprocessing
+    num_threads_save = args.num_threads_save  # Get the number of threads for exporting
+    disable_tta = args.disable_tta  # Check if test time augmentation should be disabled
+    step_size = args.step_size   # Get the step size
+    overwrite_existing = args.overwrite_existing  # Check if existing predictions should be overwritten
+    all_in_gpu = args.all_in_gpu  # Check if everything should be loaded into GPU
+    trainer_class_name = args.trainer_class_name  # Get the name of the trainer class used for full resolution and low resolution U-Net
+    cascade_trainer_class_name = args.cascade_trainer_class_name  # Get the name of the trainer class used for predicting the full resolution U-Net part of the cascade
+    lowres_only = args.lowres_only  # Check if only lowres stage should be used
+
 
     if isinstance(folds, list):
+        # If `folds` is a list and not equal to `['all']` or has more than one element
         if folds[0] != 'all' or len(folds) != 1:
+            # Convert all elements of the list to integers
             folds = [int(i) for i in folds]
     elif folds == 'None':
+        # If `folds` is a string of 'None', set it to None
         folds = None
     else:
+        # If `folds` is not a list or string of 'None', raise an error
         raise ValueError('Unexpected value for argument folds')
 
+    # Assert that `all_in_gpu` is one of ['None', 'False', 'True']
     assert all_in_gpu in ['None', 'False', 'True']
     if all_in_gpu == 'None':
+        # If `all_in_gpu` is 'None', set it to None
         all_in_gpu = None
     elif all_in_gpu == 'True':
+        # If `all_in_gpu` is 'True', set it to True
         all_in_gpu = True
     elif all_in_gpu == 'False':
+        # If `all_in_gpu` is 'False', set it to False
         all_in_gpu = False
 
+    # Define the file path to the plans file
     plans_file = Path(preprocessed_data_base, dataset, plans_identifier)
+    # Assert that the plans file exists
     assert plans_file.is_file(), f'Missing plans file: {plans_file}'
 
+    # Define the input and label folder paths for the test images
     input_folder = Path(raw_data_base, dataset, 'imagesTs')
     labels_folder = Path(raw_data_base, dataset, 'labelsTs')
+    # Assert that both input and label folders exist
     assert input_folder.is_dir(), f'Missing test images folder: {input_folder}'
     assert labels_folder.is_dir(), f'Missing test labels folder: {labels_folder}'
 
+    # Load the plans file into a dictionary
     plans = load_pickle(plans_file)
+    # Get a list of possible stages from the plans dictionary
     possible_stages = list(plans['plans_per_stage'].keys())
 
+    # Define the list of models to run predictions on
     models = ['fullres'] if len(possible_stages) == 1 else ['lowres', 'cascade_fullres']
 
+    # If `lowres_only` is True, run predictions only on the lowres model
     if lowres_only:
         assert 'lowres' in models, 'Cannot run lowres only on a pipeline without a lowres stage!'
         models = ['lowres']
 
+    # If `cascade_fullres` model is in the list of models, assert that `cascade_trainer_class_name` is not None
     if 'cascade_fullres' in models:
         assert cascade_trainer_class_name is not None, 'Cannot use cascade_fullres model without defining' \
                                                        'cascade_trainer_class_name'
 
+    # Define the base output folder path for test results
     output_folder_base = Path(results_base, dataset, task_name, 'testResults', plans_identifier)
+    # If `test_identifier` is not None, add it to the output folder path
     if args.test_identifier is not None:
         output_folder_base /= args.test_identifier
 
-    lowres_scores = None
 
+    lowres_scores = None  # initialize lowres_scores variable to None
+
+    # iterate over all models
     for model in models:
         print(f'Starting predictions for {model}')
 
+        # set current trainer class based on current model
         curr_trainer = cascade_trainer_class_name if model == 'cascade_fullres' else trainer_class_name
+        # set current output folder based on current model and lowres_only flag
         curr_output = output_folder_base / ('lowres_predictions' if model == 'lowres' and not lowres_only else '')
 
+        # ensure lowres_scores is not None if running cascade_fullres model
         if model == 'cascade_fullres':
-            assert lowres_scores.is_dir(), 'Somehow attempting cascade_fullres without lowres_scores being a dir.'
+            assert lowres_scores is not None, 'Somehow attempting cascade_fullres without lowres_scores being a dir.'
 
+        # set path to current model's output folder
         model_folder = Path(
             results_base,
             dataset,
@@ -131,22 +173,27 @@ def main():
             f'{curr_trainer}__{plans_identifier}',
         )
         print(f'Model is stored in: {model_folder}')
+        # ensure model_folder exists
         assert model_folder.is_dir(), f'Model output folder not found, expected: {model_folder}'
 
+        # call predict_from_folder function to generate predictions for current model
         predict_from_folder(model_folder, input_folder, curr_output, folds, True, num_threads_preprocessing,
                             num_threads_save, lowres_scores, 0, 1, not disable_tta,
                             mixed_precision=not args.disable_mixed_precision, overwrite_existing=overwrite_existing,
                             overwrite_all_in_gpu=all_in_gpu, step_size=step_size, checkpoint_name=args.chk)
 
+        # if running lowres model, update lowres_scores and clear GPU cache
         if model == 'lowres':
             lowres_scores = curr_output
             torch.cuda.empty_cache()
 
+    # determine label_suffix based on modalities
     label_suffix = 'png' if np.array(['png' in p for p in plans['modalities'].values()]).any() else 'nii.gz'
 
     print(f'Starting test evaluation, with label suffix {label_suffix}')
+    # call evaluate_folder function to evaluate test predictions
     evaluate_folder(labels_folder.__str__(), output_folder_base.__str__(), label_suffix, 'npz')
 
-
+# call main function
 if __name__ == '__main__':
     main()
